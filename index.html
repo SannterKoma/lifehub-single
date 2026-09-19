@@ -26,7 +26,6 @@ body {
     color: var(--text-primary);
 }
 
-/* Animated Mesh Gradient Background */
 .mesh-gradient {
     position: fixed;
     top: 0; left: 0;
@@ -48,7 +47,6 @@ body {
     75% { transform: translate(-7%, -2%); }
 }
 
-/* Floating Orbs */
 .orb {
     position: fixed;
     border-radius: 50%;
@@ -382,7 +380,6 @@ body {
 .formula-value { font-weight: 600; color: #4ade80; }
 .formula-negative { color: #f87171; }
 
-/* Calendar */
 .calendar-nav {
     display: flex;
     align-items: center;
@@ -460,7 +457,6 @@ body {
 
 .calendar-cell.other-month { color: rgba(255, 255, 255, 0.2); }
 
-/* Board View */
 .board-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -505,6 +501,7 @@ body {
     margin-bottom: 8px;
     transition: all 0.2s ease;
     cursor: pointer;
+    position: relative;
 }
 
 .board-item:hover {
@@ -518,10 +515,67 @@ body {
     margin-bottom: 6px;
 }
 
+.board-item-content {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    line-height: 1.4;
+    max-height: 40px;
+    overflow: hidden;
+}
+
 .board-item-meta {
     font-size: 0.7rem;
     color: var(--text-secondary);
     font-weight: 300;
+}
+
+.board-item-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: none;
+    gap: 4px;
+}
+
+.board-item:hover .board-item-actions {
+    display: flex;
+}
+
+.action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.action-btn.edit:hover {
+    background: rgba(99, 102, 241, 0.3);
+    color: #a5b4fc;
+}
+
+.action-btn.delete:hover {
+    background: rgba(239, 68, 68, 0.3);
+    color: #f87171;
+}
+
+.table-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
 }
 
 .relation-link {
@@ -542,7 +596,6 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Modal */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -681,6 +734,16 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
+.btn-danger {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.3);
+}
+
 .empty-state {
     text-align: center;
     padding: 40px 20px;
@@ -694,6 +757,35 @@ body {
     opacity: 0.5;
 }
 
+.confirm-dialog {
+    background: linear-gradient(135deg, rgba(30, 30, 60, 0.98) 0%, rgba(20, 20, 45, 0.98) 100%);
+    backdrop-filter: blur(40px) saturate(1.8);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 28px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+    animation: modalUp 0.3s ease-out;
+}
+
+.confirm-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.confirm-dialog h3 {
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+}
+
+.confirm-dialog p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+}
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
@@ -705,6 +797,8 @@ body {
     .nav-tab { padding: 8px 12px; font-size: 0.72rem; }
     .nav-tab span.tab-text { display: none; }
     .board-container { grid-template-columns: 1fr; }
+    .db-table { font-size: 0.75rem; }
+    .db-table tbody td { padding: 10px 8px; }
 }
 </style>
 </head>
@@ -740,6 +834,7 @@ body {
                             <th>Комиссии (₽)</th>
                             <th>Итого (₽)</th>
                             <th>Комментарий</th>
+                            <th>Действия</th>
                         </tr>
                     </thead>
                     <tbody id="finance-tbody"></tbody>
@@ -773,6 +868,7 @@ body {
                             <th>Тип</th>
                             <th>Статус</th>
                             <th>Связано с финансами</th>
+                            <th>Действия</th>
                         </tr>
                     </thead>
                     <tbody id="calendar-tbody"></tbody>
@@ -819,9 +915,14 @@ body {
     <div class="modal" id="modal-content"></div>
 </div>
 
+<!-- Confirm Dialog -->
+<div class="modal-overlay" id="confirm-overlay">
+    <div class="confirm-dialog" id="confirm-content"></div>
+</div>
+
 <script>
 // ============ STATE ============
-const STORAGE_KEY = 'lifehub_data_v2';
+const STORAGE_KEY = 'lifehub_data_v3';
 
 let state = {
     finance: [],
@@ -866,9 +967,9 @@ function seedData() {
         { id: 'c3', title: 'Йога', datetime: '2026-09-20T07:30', type: 'Личное', status: 'Сделано', relationId: null }
     ];
     state.notes = [
-        { id: 'n1', title: 'Новый модуль для курса', tags: ['работа', 'идеи'], content: 'Добавить раздел про DeFi', createdAt: Date.now() - 86400000 * 3 },
-        { id: 'n2', title: 'План путешествия в Грузию', tags: ['личное', 'идеи'], content: 'Тбилиси → Батуми', createdAt: Date.now() - 86400000 * 2 },
-        { id: 'n3', title: 'Стратегия стейкинга USDT', tags: ['финансы', 'идеи'], content: 'Изучить Bybit Earn', createdAt: Date.now() - 86400000 }
+        { id: 'n1', title: 'Новый модуль для курса', tags: ['работа', 'идеи'], content: 'Добавить раздел про DeFi и смарт-контракты', createdAt: Date.now() - 86400000 * 3 },
+        { id: 'n2', title: 'План путешествия в Грузию', tags: ['личное', 'идеи'], content: 'Тбилиси → Батуми → Кутаиси', createdAt: Date.now() - 86400000 * 2 },
+        { id: 'n3', title: 'Стратегия стейкинга USDT', tags: ['финансы', 'идеи'], content: 'Изучить Bybit Earn и другие платформы', createdAt: Date.now() - 86400000 }
     ];
     saveState();
 }
@@ -880,6 +981,7 @@ function switchTab(section, btn) {
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
     if (section === 'calendar') renderCalendar();
+    if (section === 'notes') renderNotes();
 }
 
 // ============ FINANCE RENDER ============
@@ -894,7 +996,7 @@ function renderFinance() {
     let totalIncome = 0, totalExpense = 0, totalFiat = 0;
     
     if (state.finance.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><div class="empty-state-icon">💰</div>Нет записей. Добавьте первую!</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><div class="empty-state-icon">💰</div>Нет записей. Добавьте первую!</td></tr>';
     } else {
         tbody.innerHTML = state.finance.map(item => {
             const fiat = calcFiat(item);
@@ -912,6 +1014,12 @@ function renderFinance() {
                     <td>${item.fees}</td>
                     <td><span class="${fiat >= 0 ? 'formula-value' : 'formula-value formula-negative'}">${Math.round(fiat).toLocaleString('ru-RU')} ₽</span></td>
                     <td class="text-secondary">${item.comment || '—'}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="action-btn edit" onclick="editItem('finance', '${item.id}')" title="Редактировать">✏️</button>
+                            <button class="action-btn delete" onclick="confirmDelete('finance', '${item.id}')" title="Удалить">🗑️</button>
+                        </div>
+                    </td>
                 </tr>
             `;
         }).join('');
@@ -989,7 +1097,7 @@ function renderCalendar() {
     cal.innerHTML = html;
     
     if (state.calendar.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><div class="empty-state-icon">📅</div>Нет событий</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><div class="empty-state-icon">📅</div>Нет событий</td></tr>';
     } else {
         tbody.innerHTML = state.calendar.map(ev => {
             const related = ev.relationId ? state.finance.find(f => f.id === ev.relationId) : null;
@@ -1000,6 +1108,12 @@ function renderCalendar() {
                     <td><span class="tag tag-type">${ev.type}</span></td>
                     <td><span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}">${ev.status}</span></td>
                     <td>${related ? `<span class="relation-link">🔗 ${related.category}</span>` : '—'}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="action-btn edit" onclick="editItem('calendar', '${ev.id}')" title="Редактировать">✏️</button>
+                            <button class="action-btn delete" onclick="confirmDelete('calendar', '${ev.id}')" title="Удалить">🗑️</button>
+                        </div>
+                    </td>
                 </tr>
             `;
         }).join('');
@@ -1044,8 +1158,13 @@ function renderNotes() {
                     const date = new Date(n.createdAt);
                     const dateStr = date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
                     return `
-                        <div class="board-item">
+                        <div class="board-item" onclick="viewNote('${n.id}')">
+                            <div class="board-item-actions">
+                                <button class="action-btn edit" onclick="event.stopPropagation(); editItem('notes', '${n.id}')" title="Редактировать">✏️</button>
+                                <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('notes', '${n.id}')" title="Удалить">🗑️</button>
+                            </div>
                             <div class="board-item-title">${n.title}</div>
+                            <div class="board-item-content">${n.content || 'Без содержания'}</div>
                             <div class="board-item-meta">
                                 ${n.tags.map(t => {
                                     const cls = t === 'работа' ? 'tag-work' : t === 'личное' ? 'tag-personal' : t === 'идеи' ? 'tag-ideas' : 'tag-finance';
@@ -1061,111 +1180,159 @@ function renderNotes() {
     }).join('');
 }
 
-// ============ MODAL ============
-function openModal(type) {
+// ============ VIEW NOTE ============
+function viewNote(id) {
+    const note = state.notes.find(n => n.id === id);
+    if (!note) return;
+    
     const overlay = document.getElementById('modal-overlay');
     const content = document.getElementById('modal-content');
+    
+    const date = new Date(note.createdAt);
+    const dateStr = date.toLocaleDateString('ru-RU', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    content.innerHTML = `
+        <h3>📝 ${note.title}</h3>
+        <div style="margin-bottom: 16px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px;">Создано</div>
+            <div style="font-size: 0.85rem;">${dateStr}</div>
+        </div>
+        <div style="margin-bottom: 16px;">
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase;">Теги</div>
+            ${note.tags.map(t => {
+                const cls = t === 'работа' ? 'tag-work' : t === 'личное' ? 'tag-personal' : t === 'идеи' ? 'tag-ideas' : 'tag-finance';
+                return `<span class="tag-multi ${cls}" style="padding: 4px 12px;">#${t}</span>`;
+            }).join('')}
+        </div>
+        <div style="margin-bottom: 20px;">
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase;">Содержание</div>
+            <div style="padding: 16px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); line-height: 1.6; white-space: pre-wrap;">${note.content || 'Без содержания'}</div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">Закрыть</button>
+            <button class="btn btn-primary" onclick="closeModal(); editItem('notes', '${note.id}')">✏️ Редактировать</button>
+        </div>
+    `;
+    
+    overlay.classList.add('active');
+}
+
+// ============ MODAL ============
+function openModal(type, editId = null) {
+    const overlay = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    
+    let item = null;
+    if (editId) {
+        item = state[type].find(i => i.id === editId);
+    }
     
     let html = '';
     
     if (type === 'finance') {
         html = `
-            <h3>💰 Новая запись</h3>
+            <h3>${item ? '✏️ Редактировать' : '💰 Новая'} запись</h3>
             <div class="form-group">
                 <label>Дата</label>
-                <input type="date" class="input-field" id="f-date" value="${new Date().toISOString().split('T')[0]}">
+                <input type="date" class="input-field" id="f-date" value="${item ? item.date : new Date().toISOString().split('T')[0]}">
             </div>
             <div class="form-group">
                 <label>Тип</label>
                 <select class="select-field" id="f-type">
-                    <option value="Доход">Доход</option>
-                    <option value="Расход">Расход</option>
+                    <option value="Доход" ${item && item.type === 'Доход' ? 'selected' : ''}>Доход</option>
+                    <option value="Расход" ${item && item.type === 'Расход' ? 'selected' : ''}>Расход</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>Категория</label>
                 <select class="select-field" id="f-category">
-                    ${CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('')}
+                    ${CATEGORIES.map(c => `<option value="${c}" ${item && item.category === c ? 'selected' : ''}>${c}</option>`).join('')}
                 </select>
             </div>
             <div class="form-group">
                 <label>Сумма USDT</label>
-                <input type="number" class="input-field" id="f-amount" placeholder="0" step="0.01">
+                <input type="number" class="input-field" id="f-amount" placeholder="0" step="0.01" value="${item ? item.amount : ''}">
             </div>
             <div class="form-group">
                 <label>Курс (₽)</label>
-                <input type="number" class="input-field" id="f-rate" placeholder="95.5" step="0.01">
+                <input type="number" class="input-field" id="f-rate" placeholder="95.5" step="0.01" value="${item ? item.rate : ''}">
             </div>
             <div class="form-group">
                 <label>Комиссии (₽)</label>
-                <input type="number" class="input-field" id="f-fees" placeholder="0" step="0.01" value="0">
+                <input type="number" class="input-field" id="f-fees" placeholder="0" step="0.01" value="${item ? item.fees : '0'}">
             </div>
             <div class="form-group">
                 <label>Комментарий</label>
-                <textarea class="textarea-field" id="f-comment" placeholder="Необязательно"></textarea>
+                <textarea class="textarea-field" id="f-comment" placeholder="Необязательно">${item ? item.comment : ''}</textarea>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-                <button class="btn btn-primary" onclick="saveFinance()">Сохранить</button>
+                <button class="btn btn-primary" onclick="saveFinance('${editId || ''}')">${item ? 'Сохранить' : 'Добавить'}</button>
             </div>
         `;
     } else if (type === 'calendar') {
         html = `
-            <h3>📅 Новое событие</h3>
+            <h3>${item ? '✏️ Редактировать' : '📅 Новое'} событие</h3>
             <div class="form-group">
                 <label>Название</label>
-                <input type="text" class="input-field" id="c-title" placeholder="Название встречи">
+                <input type="text" class="input-field" id="c-title" placeholder="Название встречи" value="${item ? item.title : ''}">
             </div>
             <div class="form-group">
                 <label>Дата и время</label>
-                <input type="datetime-local" class="input-field" id="c-datetime">
+                <input type="datetime-local" class="input-field" id="c-datetime" value="${item ? item.datetime : ''}">
             </div>
             <div class="form-group">
                 <label>Тип</label>
                 <select class="select-field" id="c-type">
-                    ${EVENT_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}
+                    ${EVENT_TYPES.map(t => `<option value="${t}" ${item && item.type === t ? 'selected' : ''}>${t}</option>`).join('')}
                 </select>
             </div>
             <div class="form-group">
                 <label>Статус</label>
                 <select class="select-field" id="c-status">
-                    <option value="Запланировано">Запланировано</option>
-                    <option value="Сделано">Сделано</option>
+                    <option value="Запланировано" ${item && item.status === 'Запланировано' ? 'selected' : ''}>Запланировано</option>
+                    <option value="Сделано" ${item && item.status === 'Сделано' ? 'selected' : ''}>Сделано</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>Связано с финансами (Relation)</label>
                 <select class="select-field" id="c-relation">
                     <option value="">— Нет —</option>
-                    ${state.finance.map(f => `<option value="${f.id}">${f.date} · ${f.category} · ${f.amount} USDT</option>`).join('')}
+                    ${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId === f.id ? 'selected' : ''}>${f.date} · ${f.category} · ${f.amount} USDT</option>`).join('')}
                 </select>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-                <button class="btn btn-primary" onclick="saveCalendar()">Сохранить</button>
+                <button class="btn btn-primary" onclick="saveCalendar('${editId || ''}')">${item ? 'Сохранить' : 'Добавить'}</button>
             </div>
         `;
     } else if (type === 'notes') {
         html = `
-            <h3>📝 Новая заметка</h3>
+            <h3>${item ? '✏️ Редактировать' : '📝 Новая'} заметку</h3>
             <div class="form-group">
                 <label>Тема</label>
-                <input type="text" class="input-field" id="n-title" placeholder="Тема заметки">
+                <input type="text" class="input-field" id="n-title" placeholder="Тема заметки" value="${item ? item.title : ''}">
             </div>
             <div class="form-group">
                 <label>Теги (через запятую)</label>
-                <input type="text" class="input-field" id="n-tags" placeholder="работа, идеи, финансы">
+                <input type="text" class="input-field" id="n-tags" placeholder="работа, идеи, финансы" value="${item ? item.tags.join(', ') : ''}">
                 <div style="margin-top:6px;font-size:0.7rem;color:var(--text-secondary);">
                     Доступные: ${TAGS.map(t => '#'+t).join(', ')}
                 </div>
             </div>
             <div class="form-group">
                 <label>Содержание</label>
-                <textarea class="textarea-field" id="n-content" placeholder="Пишите здесь..." style="min-height:120px;"></textarea>
+                <textarea class="textarea-field" id="n-content" placeholder="Пишите здесь..." style="min-height:150px;">${item ? item.content : ''}</textarea>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-                <button class="btn btn-primary" onclick="saveNote()">Сохранить</button>
+                <button class="btn btn-primary" onclick="saveNote('${editId || ''}')">${item ? 'Сохранить' : 'Добавить'}</button>
             </div>
         `;
     }
@@ -1178,7 +1345,7 @@ function closeModal() {
     document.getElementById('modal-overlay').classList.remove('active');
 }
 
-function saveFinance() {
+function saveFinance(editId = '') {
     const date = document.getElementById('f-date').value;
     const type = document.getElementById('f-type').value;
     const category = document.getElementById('f-category').value;
@@ -1188,21 +1355,30 @@ function saveFinance() {
     const comment = document.getElementById('f-comment').value;
     
     if (!date || amount === 0) {
-        alert('Заполните дату и сумму');
+        showNotification('Заполните дату и сумму', 'error');
         return;
     }
     
-    state.finance.push({
-        id: 'f' + Date.now(),
-        date, type, category, amount, rate, fees, comment
-    });
+    const data = { date, type, category, amount, rate, fees, comment };
+    
+    if (editId) {
+        const index = state.finance.findIndex(f => f.id === editId);
+        if (index !== -1) {
+            state.finance[index] = { ...state.finance[index], ...data };
+            showNotification('Запись обновлена', 'success');
+        }
+    } else {
+        data.id = 'f' + Date.now();
+        state.finance.push(data);
+        showNotification('Запись добавлена', 'success');
+    }
     
     saveState();
     renderFinance();
     closeModal();
 }
 
-function saveCalendar() {
+function saveCalendar(editId = '') {
     const title = document.getElementById('c-title').value.trim();
     const datetime = document.getElementById('c-datetime').value;
     const type = document.getElementById('c-type').value;
@@ -1210,41 +1386,155 @@ function saveCalendar() {
     const relationId = document.getElementById('c-relation').value || null;
     
     if (!title || !datetime) {
-        alert('Заполните название и дату');
+        showNotification('Заполните название и дату', 'error');
         return;
     }
     
-    state.calendar.push({
-        id: 'c' + Date.now(),
-        title, datetime, type, status, relationId
-    });
+    const data = { title, datetime, type, status, relationId };
+    
+    if (editId) {
+        const index = state.calendar.findIndex(c => c.id === editId);
+        if (index !== -1) {
+            state.calendar[index] = { ...state.calendar[index], ...data };
+            showNotification('Событие обновлено', 'success');
+        }
+    } else {
+        data.id = 'c' + Date.now();
+        state.calendar.push(data);
+        showNotification('Событие добавлено', 'success');
+    }
     
     saveState();
     renderCalendar();
     closeModal();
 }
 
-function saveNote() {
+function saveNote(editId = '') {
     const title = document.getElementById('n-title').value.trim();
     const tagsRaw = document.getElementById('n-tags').value;
     const content = document.getElementById('n-content').value;
     
     if (!title) {
-        alert('Введите тему');
+        showNotification('Введите тему', 'error');
         return;
     }
     
     const tags = tagsRaw.split(',').map(t => t.trim().replace(/^#/, '').toLowerCase()).filter(t => TAGS.includes(t));
     
-    state.notes.push({
-        id: 'n' + Date.now(),
-        title, tags, content, createdAt: Date.now()
-    });
+    const data = { title, tags, content };
+    
+    if (editId) {
+        const index = state.notes.findIndex(n => n.id === editId);
+        if (index !== -1) {
+            state.notes[index] = { ...state.notes[index], ...data };
+            showNotification('Заметка обновлена', 'success');
+        }
+    } else {
+        data.id = 'n' + Date.now();
+        data.createdAt = Date.now();
+        state.notes.push(data);
+        showNotification('Заметка добавлена', 'success');
+    }
     
     saveState();
     renderNotes();
     closeModal();
 }
+
+// ============ EDIT ITEM ============
+function editItem(type, id) {
+    openModal(type, id);
+}
+
+// ============ DELETE ITEM ============
+function confirmDelete(type, id) {
+    const overlay = document.getElementById('confirm-overlay');
+    const content = document.getElementById('confirm-content');
+    
+    const typeNames = {
+        finance: 'финансовую запись',
+        calendar: 'событие',
+        notes: 'заметку'
+    };
+    
+    content.innerHTML = `
+        <div class="confirm-icon">⚠️</div>
+        <h3>Подтвердите удаление</h3>
+        <p>Вы уверены, что хотите удалить ${typeNames[type]}? Это действие нельзя отменить.</p>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeConfirm()">Отмена</button>
+            <button class="btn btn-danger" onclick="deleteItem('${type}', '${id}')">Удалить</button>
+        </div>
+    `;
+    
+    overlay.classList.add('active');
+}
+
+function closeConfirm() {
+    document.getElementById('confirm-overlay').classList.remove('active');
+}
+
+function deleteItem(type, id) {
+    const index = state[type].findIndex(i => i.id === id);
+    if (index !== -1) {
+        state[type].splice(index, 1);
+        saveState();
+        
+        if (type === 'finance') renderFinance();
+        else if (type === 'calendar') renderCalendar();
+        else if (type === 'notes') renderNotes();
+        
+        showNotification('Запись удалена', 'success');
+    }
+    closeConfirm();
+}
+
+// ============ NOTIFICATIONS ============
+function showNotification(message, type = 'info') {
+    const existing = document.querySelector('.notification');
+    if (existing) existing.remove();
+    
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 14px 20px;
+        border-radius: 12px;
+        background: ${type === 'success' ? 'rgba(34, 197, 94, 0.2)' : type === 'error' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(99, 102, 241, 0.2)'};
+        border: 1px solid ${type === 'success' ? 'rgba(34, 197, 94, 0.3)' : type === 'error' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(99, 102, 241, 0.3)'};
+        color: ${type === 'success' ? '#4ade80' : type === 'error' ? '#f87171' : '#a5b4fc'};
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 500;
+        backdrop-filter: blur(20px);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
 
 // ============ INIT ============
 loadState();
