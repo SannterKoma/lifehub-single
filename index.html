@@ -23,7 +23,6 @@ body {
     min-height: 100vh;
     background: #0f0f23;
     color: var(--text-primary);
-    /* Статичный, красивый градиент вместо тяжелой анимации */
     background-image: 
         radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
         radial-gradient(ellipse at 80% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
@@ -57,7 +56,7 @@ body {
 
 .glass-card {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px); /* Уменьшено с 40px для производительности */
+    backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
@@ -207,7 +206,7 @@ body {
 .nav-tab span.emoji { font-size: 1.2rem; transition: background 0.1s; }
 
 .db-section { display: none; }
-.db-section.active { display: block; } /* Мгновенное переключение без анимации */
+.db-section.active { display: block; }
 
 .stats-row {
     display: grid;
@@ -349,7 +348,6 @@ body {
     font-size: 0.7rem;
 }
 
-/* Modal */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -357,7 +355,7 @@ body {
     backdrop-filter: blur(5px);
     z-index: 200;
     display: none;
-    align-items: flex-end; /* Для мобильного вида снизу */
+    align-items: flex-end;
     justify-content: center;
 }
 .modal-overlay.active { display: flex; }
@@ -430,7 +428,6 @@ body {
 
 .empty-state { text-align: center; padding: 30px 20px; color: var(--text-secondary); font-size: 0.85rem; }
 
-/* Notification */
 .notification {
     position: fixed;
     top: 20px;
@@ -479,7 +476,7 @@ body {
 </head>
 <body>
 
-<div class="sync-status" id="sync-status">☁️ Синхронизация</div>
+<div class="sync-status" id="sync-status">💾 Локальный режим</div>
 
 <div class="container">
     <div class="page-header">
@@ -487,11 +484,10 @@ body {
         <p>Центр управления жизнью</p>
     </div>
 
-    <!-- 💰 Финансы -->
     <div class="db-section active" id="section-finance">
         <div class="glass-card">
             <div class="card-header">
-                <h2>💰 Финансы</h2>
+                <h2> Финансы</h2>
                 <span class="badge">Table</span>
             </div>
             <div class="stats-row" id="finance-stats"></div>
@@ -514,7 +510,6 @@ body {
         </div>
     </div>
 
-    <!-- 📅 Календарь -->
     <div class="db-section" id="section-calendar">
         <div class="glass-card">
             <div class="card-header">
@@ -544,7 +539,6 @@ body {
         </div>
     </div>
 
-    <!-- 📝 Заметки -->
     <div class="db-section" id="section-notes">
         <div class="glass-card">
             <div class="card-header">
@@ -576,17 +570,14 @@ body {
     <div class="modal" id="modal-content"></div>
 </div>
 
-<!-- Firebase SDK -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
+<script>
 // ==========================================
-// ⚠️ ВСТАВЬТЕ СЮДА ВАШИ ДАННЫЕ ИЗ FIREBASE
+// ВСТАВЬ СЮДА СВОЙ FIREBASE CONFIG
 // ==========================================
 const firebaseConfig = {
-  apiKey: "AIzaSyDOr6kzxayM7fOwuEs4xvbOCPvqicdh890",
+    apiKey: "AIzaSyDOr6kzxayM7fOwuEs4xvbOCPvqicdh890",
   authDomain: "lifehub28.firebaseapp.com",
+  databaseURL: "https://lifehub28-default-rtdb.firebaseio.com",
   projectId: "lifehub28",
   storageBucket: "lifehub28.firebasestorage.app",
   messagingSenderId: "283957281646",
@@ -597,23 +588,6 @@ let db = null;
 let dataRef = null;
 let isCloudSync = false;
 
-// Инициализация Firebase или fallback на LocalStorage
-try {
-    if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
-        const app = initializeApp(firebaseConfig);
-        db = getDatabase(app);
-        dataRef = ref(db, 'lifehub_data');
-        isCloudSync = true;
-        updateSyncStatus(true);
-    } else {
-        console.warn("Firebase не настроен. Используется локальное хранилище.");
-        updateSyncStatus(false);
-    }
-} catch (e) {
-    console.error("Ошибка инициализации Firebase:", e);
-    updateSyncStatus(false);
-}
-
 let state = { finance: [], calendar: [], notes: [] };
 let calendarDate = new Date();
 
@@ -621,7 +595,90 @@ const CATEGORIES = ['ЗП USDT', 'Роялти', 'Еда', 'Транспорт',
 const EVENT_TYPES = ['Встреча', 'Командировка', 'Дедлайн', 'Личное'];
 const TAGS = ['работа', 'личное', 'идеи', 'финансы'];
 
-// Начальные данные (только если хранилище пустое)
+// Проверка Firebase конфигурации
+function checkFirebaseConfig() {
+    return firebaseConfig.apiKey && firebaseConfig.apiKey !== "ВСТАВЬ_СЮДА" && firebaseConfig.apiKey !== "YOUR_API_KEY";
+}
+
+// Инициализация Firebase (если конфиг правильный)
+async function initFirebase() {
+    if (!checkFirebaseConfig()) {
+        console.log("Firebase не настроен, используем localStorage");
+        updateSyncStatus(false);
+        loadLocalState();
+        return;
+    }
+
+    try {
+        const firebaseApp = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+        const firebaseDb = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+        
+        const app = firebaseApp.initializeApp(firebaseConfig);
+        db = firebaseDb.getDatabase(app);
+        dataRef = firebaseDb.ref(db, 'lifehub_data');
+        isCloudSync = true;
+        
+        updateSyncStatus(true);
+        loadCloudState();
+    } catch (error) {
+        console.error("Ошибка Firebase:", error);
+        updateSyncStatus(false);
+        loadLocalState();
+    }
+}
+
+function updateSyncStatus(isOnline) {
+    const el = document.getElementById('sync-status');
+    if (isOnline) {
+        el.textContent = '️ Синхронизация';
+        el.classList.remove('offline');
+    } else {
+        el.textContent = '💾 Локально';
+        el.classList.add('offline');
+    }
+}
+
+function saveState() {
+    if (isCloudSync && dataRef) {
+        import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
+            fb.set(dataRef, state).catch(err => {
+                console.error("Ошибка сохранения:", err);
+                showNotification("Ошибка синхронизации", "error");
+            });
+        });
+    } else {
+        localStorage.setItem('lifehub_local', JSON.stringify(state));
+    }
+}
+
+function loadLocalState() {
+    const saved = localStorage.getItem('lifehub_local');
+    if (saved) {
+        try {
+            state = JSON.parse(saved);
+        } catch(e) {
+            seedData();
+        }
+    } else {
+        seedData();
+    }
+    renderAll();
+}
+
+function loadCloudState() {
+    import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
+        fb.onValue(dataRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                state = data;
+            } else {
+                seedData();
+            }
+            renderAll();
+        });
+    });
+}
+
 function seedData() {
     state.finance = [
         { id: 'f1', date: '2026-09-15', type: 'Доход', category: 'ЗП USDT', amount: 2000, rate: 95.5, fees: 150, comment: 'Зарплата' },
@@ -634,52 +691,6 @@ function seedData() {
         { id: 'n1', title: 'Новый модуль для курса', tags: ['работа', 'идеи'], content: 'Добавить раздел про DeFi', createdAt: Date.now() }
     ];
     saveState();
-}
-
-// Сохранение состояния (в облако или локально)
-window.saveState = function() {
-    if (isCloudSync) {
-        set(dataRef, state).catch(err => {
-            console.error("Ошибка синхронизации:", err);
-            showNotification("Ошибка синхронизации", "error");
-        });
-    } else {
-        localStorage.setItem('lifehub_local', JSON.stringify(state));
-    }
-}
-
-// Загрузка состояния
-function loadState() {
-    if (isCloudSync) {
-        onValue(dataRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                state = data;
-                renderAll();
-            } else {
-                seedData();
-            }
-        });
-    } else {
-        const saved = localStorage.getItem('lifehub_local');
-        if (saved) {
-            try { state = JSON.parse(saved); } catch(e) { seedData(); }
-        } else {
-            seedData();
-        }
-        renderAll();
-    }
-}
-
-function updateSyncStatus(isOnline) {
-    const el = document.getElementById('sync-status');
-    if (isOnline) {
-        el.textContent = '☁️ Синхронизация активна';
-        el.classList.remove('offline');
-    } else {
-        el.textContent = '💾 Локальный режим';
-        el.classList.add('offline');
-    }
 }
 
 // ==========================================
@@ -717,8 +728,8 @@ function renderFinance() {
                     <td><span class="${fiat >= 0 ? 'formula-value' : 'formula-negative'}">${Math.round(fiat)} ₽</span></td>
                     <td>
                         <div class="table-actions">
-                            <button class="action-btn" onclick="window.editItem('finance', '${item.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="window.confirmDelete('finance', '${item.id}')">🗑️</button>
+                            <button class="action-btn" onclick="editItem('finance', '${item.id}')">✏️</button>
+                            <button class="action-btn delete" onclick="confirmDelete('finance', '${item.id}')">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -734,7 +745,7 @@ function renderFinance() {
 
 const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 
-window.changeMonth = function(delta) {
+function changeMonth(delta) {
     calendarDate.setMonth(calendarDate.getMonth() + delta);
     renderCalendar();
 }
@@ -778,13 +789,13 @@ function renderCalendar() {
             const related = ev.relationId ? state.finance.find(f => f.id === ev.relationId) : null;
             return `
                 <tr>
-                    <td>${ev.title}<br><small class="text-secondary">${related ? '🔗 ' + related.category : ''}</small></td>
+                    <td>${ev.title}<br><small class="text-secondary">${related ? ' ' + related.category : ''}</small></td>
                     <td class="text-secondary">${ev.datetime.slice(5, 16).replace('T', ' ')}</td>
                     <td><span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}">${ev.status}</span></td>
                     <td>
                         <div class="table-actions">
-                            <button class="action-btn" onclick="window.editItem('calendar', '${ev.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="window.confirmDelete('calendar', '${ev.id}')">🗑️</button>
+                            <button class="action-btn" onclick="editItem('calendar', '${ev.id}')">✏️</button>
+                            <button class="action-btn delete" onclick="confirmDelete('calendar', '${ev.id}')">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -810,21 +821,20 @@ function renderNotes() {
     
     container.innerHTML = TAGS.map(tag => {
         const items = grouped[tag];
-        const cls = tag === 'работа' ? 'tag-work' : tag === 'личное' ? 'tag-personal' : tag === 'идеи' ? 'tag-ideas' : 'tag-finance';
         return `
             <div class="board-column">
                 <div class="board-column-title"><span>#${tag}</span><span class="board-count">${items.length}</span></div>
                 ${items.length === 0 ? '<div style="font-size:0.7rem;color:var(--text-secondary);text-align:center;padding:10px;">Пусто</div>' : 
                 items.map(n => `
-                    <div class="board-item" onclick="window.viewNote('${n.id}')">
+                    <div class="board-item" onclick="viewNote('${n.id}')">
                         <div class="board-item-title">${n.title}</div>
                         <div class="board-item-content">${n.content || 'Без содержания'}</div>
                         <div class="board-item-meta">
                             ${n.tags.map(t => `<span class="tag-multi ${t === 'работа' ? 'tag-work' : t === 'личное' ? 'tag-personal' : t === 'идеи' ? 'tag-ideas' : 'tag-finance'}">#${t}</span>`).join('')}
                         </div>
                         <div class="table-actions" style="margin-top:8px; justify-content:flex-end;">
-                            <button class="action-btn" onclick="event.stopPropagation(); window.editItem('notes', '${n.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="event.stopPropagation(); window.confirmDelete('notes', '${n.id}')">🗑️</button>
+                            <button class="action-btn" onclick="event.stopPropagation(); editItem('notes', '${n.id}')">✏️</button>
+                            <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('notes', '${n.id}')">🗑️</button>
                         </div>
                     </div>
                 `).join('')}
@@ -836,7 +846,7 @@ function renderNotes() {
 // ==========================================
 // МОДАЛЬНЫЕ ОКНА И ДЕЙСТВИЯ
 // ==========================================
-window.switchTab = function(section, btn) {
+function switchTab(section, btn) {
     document.querySelectorAll('.db-section').forEach(s => s.classList.remove('active'));
     document.getElementById('section-' + section).classList.add('active');
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -844,7 +854,7 @@ window.switchTab = function(section, btn) {
     if (section === 'calendar') renderCalendar();
 }
 
-window.openModal = function(type, editId = null) {
+function openModal(type, editId = null) {
     const item = editId ? state[type].find(i => i.id === editId) : null;
     const content = document.getElementById('modal-content');
     let html = `<h3>${item ? '✏️ Редактировать' : '＋ Новая'} запись</h3>`;
@@ -852,8 +862,8 @@ window.openModal = function(type, editId = null) {
     if (type === 'finance') {
         html += `
             <div class="form-group"><label>Дата</label><input type="date" class="input-field" id="f-date" value="${item ? item.date : new Date().toISOString().split('T')[0]}"></div>
-            <div class="form-group"><label>Тип</label><select class="select-field" id="f-type"><option value="Доход" ${item?.type==='Доход'?'selected':''}>Доход</option><option value="Расход" ${item?.type==='Расход'?'selected':''}>Расход</option></select></div>
-            <div class="form-group"><label>Категория</label><select class="select-field" id="f-category">${CATEGORIES.map(c => `<option value="${c}" ${item?.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+            <div class="form-group"><label>Тип</label><select class="select-field" id="f-type"><option value="Доход" ${item && item.type==='Доход'?'selected':''}>Доход</option><option value="Расход" ${item && item.type==='Расход'?'selected':''}>Расход</option></select></div>
+            <div class="form-group"><label>Категория</label><select class="select-field" id="f-category">${CATEGORIES.map(c => `<option value="${c}" ${item && item.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
             <div class="form-group"><label>Сумма USDT</label><input type="number" class="input-field" id="f-amount" step="0.01" value="${item ? item.amount : ''}"></div>
             <div class="form-group"><label>Курс (₽)</label><input type="number" class="input-field" id="f-rate" step="0.01" value="${item ? item.rate : '95'}"></div>
             <div class="form-group"><label>Комиссии (₽)</label><input type="number" class="input-field" id="f-fees" step="0.01" value="${item ? item.fees : '0'}"></div>
@@ -863,9 +873,9 @@ window.openModal = function(type, editId = null) {
         html += `
             <div class="form-group"><label>Название</label><input type="text" class="input-field" id="c-title" value="${item ? item.title : ''}"></div>
             <div class="form-group"><label>Дата и время</label><input type="datetime-local" class="input-field" id="c-datetime" value="${item ? item.datetime : ''}"></div>
-            <div class="form-group"><label>Тип</label><select class="select-field" id="c-type">${EVENT_TYPES.map(t => `<option value="${t}" ${item?.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
-            <div class="form-group"><label>Статус</label><select class="select-field" id="c-status"><option value="Запланировано" ${item?.status==='Запланировано'?'selected':''}>Запланировано</option><option value="Сделано" ${item?.status==='Сделано'?'selected':''}>Сделано</option></select></div>
-            <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item?.relationId===f.id?'selected':''}>${f.category} (${f.amount} USDT)</option>`).join('')}</select></div>
+            <div class="form-group"><label>Тип</label><select class="select-field" id="c-type">${EVENT_TYPES.map(t => `<option value="${t}" ${item && item.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+            <div class="form-group"><label>Статус</label><select class="select-field" id="c-status"><option value="Запланировано" ${item && item.status==='Запланировано'?'selected':''}>Запланировано</option><option value="Сделано" ${item && item.status==='Сделано'?'selected':''}>Сделано</option></select></div>
+            <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} USDT)</option>`).join('')}</select></div>
         `;
     } else if (type === 'notes') {
         html += `
@@ -877,71 +887,91 @@ window.openModal = function(type, editId = null) {
     
     html += `
         <div class="modal-actions">
-            <button class="btn btn-secondary" onclick="window.closeModal()">Отмена</button>
-            <button class="btn btn-primary" onclick="window.saveData('${type}', '${editId || ''}')">${item ? 'Сохранить' : 'Добавить'}</button>
+            <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            <button class="btn btn-primary" onclick="saveData('${type}', '${editId || ''}')">${item ? 'Сохранить' : 'Добавить'}</button>
         </div>
     `;
     content.innerHTML = html;
     document.getElementById('modal-overlay').classList.add('active');
 }
 
-window.closeModal = function() {
+function closeModal() {
     document.getElementById('modal-overlay').classList.remove('active');
 }
 
-window.saveData = function(type, editId) {
+function saveData(type, editId) {
     let data = {};
-    if (type === 'finance') {
-        const amount = parseFloat(document.getElementById('f-amount').value) || 0;
-        if (!document.getElementById('f-date').value || amount === 0) return showNotification('Заполните дату и сумму', 'error');
-        data = {
-            date: document.getElementById('f-date').value,
-            type: document.getElementById('f-type').value,
-            category: document.getElementById('f-category').value,
-            amount: amount,
-            rate: parseFloat(document.getElementById('f-rate').value) || 0,
-            fees: parseFloat(document.getElementById('f-fees').value) || 0,
-            comment: document.getElementById('f-comment').value
-        };
-    } else if (type === 'calendar') {
-        if (!document.getElementById('c-title').value || !document.getElementById('c-datetime').value) return showNotification('Заполните название и дату', 'error');
-        data = {
-            title: document.getElementById('c-title').value.trim(),
-            datetime: document.getElementById('c-datetime').value,
-            type: document.getElementById('c-type').value,
-            status: document.getElementById('c-status').value,
-            relationId: document.getElementById('c-relation').value || null
-        };
-    } else if (type === 'notes') {
-        if (!document.getElementById('n-title').value) return showNotification('Введите тему', 'error');
-        const tagsRaw = document.getElementById('n-tags').value;
-        data = {
-            title: document.getElementById('n-title').value.trim(),
-            tags: tagsRaw.split(',').map(t => t.trim().replace(/^#/, '').toLowerCase()).filter(t => TAGS.includes(t)),
-            content: document.getElementById('n-content').value
-        };
-        if (!editId) data.createdAt = Date.now();
-    }
+    try {
+        if (type === 'finance') {
+            const amount = parseFloat(document.getElementById('f-amount').value) || 0;
+            const date = document.getElementById('f-date').value;
+            if (!date || amount === 0) {
+                showNotification('Заполните дату и сумму', 'error');
+                return;
+            }
+            data = {
+                date: date,
+                type: document.getElementById('f-type').value,
+                category: document.getElementById('f-category').value,
+                amount: amount,
+                rate: parseFloat(document.getElementById('f-rate').value) || 0,
+                fees: parseFloat(document.getElementById('f-fees').value) || 0,
+                comment: document.getElementById('f-comment').value
+            };
+        } else if (type === 'calendar') {
+            const title = document.getElementById('c-title').value.trim();
+            const datetime = document.getElementById('c-datetime').value;
+            if (!title || !datetime) {
+                showNotification('Заполните название и дату', 'error');
+                return;
+            }
+            data = {
+                title: title,
+                datetime: datetime,
+                type: document.getElementById('c-type').value,
+                status: document.getElementById('c-status').value,
+                relationId: document.getElementById('c-relation').value || null
+            };
+        } else if (type === 'notes') {
+            const title = document.getElementById('n-title').value.trim();
+            if (!title) {
+                showNotification('Введите тему', 'error');
+                return;
+            }
+            const tagsRaw = document.getElementById('n-tags').value;
+            data = {
+                title: title,
+                tags: tagsRaw.split(',').map(t => t.trim().replace(/^#/, '').toLowerCase()).filter(t => TAGS.includes(t)),
+                content: document.getElementById('n-content').value
+            };
+            if (!editId) data.createdAt = Date.now();
+        }
 
-    if (editId) {
-        const index = state[type].findIndex(i => i.id === editId);
-        if (index !== -1) state[type][index] = { ...state[type][index], ...data };
-    } else {
-        data.id = type[0] + Date.now();
-        state[type].push(data);
+        if (editId) {
+            const index = state[type].findIndex(i => i.id === editId);
+            if (index !== -1) {
+                state[type][index] = { ...state[type][index], ...data };
+            }
+        } else {
+            data.id = type[0] + Date.now();
+            state[type].push(data);
+        }
+        
+        saveState();
+        renderAll();
+        closeModal();
+        showNotification(editId ? 'Обновлено' : 'Добавлено', 'success');
+    } catch (error) {
+        console.error('Ошибка сохранения:', error);
+        showNotification('Ошибка: ' + error.message, 'error');
     }
-    
-    saveState();
-    renderAll();
-    closeModal();
-    showNotification(editId ? 'Обновлено' : 'Добавлено', 'success');
 }
 
-window.editItem = function(type, id) {
+function editItem(type, id) {
     openModal(type, id);
 }
 
-window.confirmDelete = function(type, id) {
+function confirmDelete(type, id) {
     if (confirm('Удалить эту запись?')) {
         state[type] = state[type].filter(i => i.id !== id);
         saveState();
@@ -950,7 +980,7 @@ window.confirmDelete = function(type, id) {
     }
 }
 
-window.viewNote = function(id) {
+function viewNote(id) {
     const note = state.notes.find(n => n.id === id);
     if (!note) return;
     const content = document.getElementById('modal-content');
@@ -961,8 +991,8 @@ window.viewNote = function(id) {
         <div style="margin-bottom:16px;">${note.tags.map(t => `<span class="tag-multi ${t === 'работа' ? 'tag-work' : t === 'личное' ? 'tag-personal' : t === 'идеи' ? 'tag-ideas' : 'tag-finance'}">#${t}</span>`).join('')}</div>
         <div style="background:rgba(0,0,0,0.2); padding:16px; border-radius:10px; line-height:1.5; white-space:pre-wrap; margin-bottom:20px;">${note.content || 'Без содержания'}</div>
         <div class="modal-actions">
-            <button class="btn btn-secondary" onclick="window.closeModal()">Закрыть</button>
-            <button class="btn btn-primary" onclick="window.closeModal(); window.editItem('notes', '${note.id}')">Редактировать</button>
+            <button class="btn btn-secondary" onclick="closeModal()">Закрыть</button>
+            <button class="btn btn-primary" onclick="closeModal(); editItem('notes', '${note.id}')">Редактировать</button>
         </div>
     `;
     document.getElementById('modal-overlay').classList.add('active');
@@ -981,8 +1011,8 @@ function showNotification(message, type) {
     setTimeout(() => el.remove(), 2500);
 }
 
-// Запуск
-loadState();
+// Запуск приложения
+initFirebase();
 </script>
 </body>
 </html>
