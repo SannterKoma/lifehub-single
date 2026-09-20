@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🧠 Мой LifeHub</title>
+<title> Мой LifeHub</title>
 <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/index.min.css" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -126,6 +126,8 @@ body {
 .tag-type { background: rgba(6, 182, 212, 0.15); color: #67e8f9; }
 .tag-status { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
 .tag-done { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+.tag-usdt { background: rgba(6, 182, 212, 0.15); color: #67e8f9; }
+.tag-rub { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
 
 .tag-multi {
     display: inline-block;
@@ -472,6 +474,9 @@ body {
     border-color: rgba(251, 191, 36, 0.2);
 }
 .sync-status.offline::before { background: #fbbf24; }
+
+.currency-field { display: none; }
+.currency-field.active { display: block; }
 </style>
 </head>
 <body>
@@ -480,7 +485,7 @@ body {
 
 <div class="container">
     <div class="page-header">
-        <h1>🧠 Мой LifeHub</h1>
+        <h1> Мой LifeHub</h1>
         <p>Центр управления жизнью</p>
     </div>
 
@@ -497,6 +502,7 @@ body {
                         <tr>
                             <th>Дата</th>
                             <th>Тип</th>
+                            <th>Валюта</th>
                             <th>Категория</th>
                             <th>Сумма</th>
                             <th>Итого</th>
@@ -513,7 +519,7 @@ body {
     <div class="db-section" id="section-calendar">
         <div class="glass-card">
             <div class="card-header">
-                <h2>📅 Календарь</h2>
+                <h2> Календарь</h2>
                 <span class="badge">Calendar</span>
             </div>
             <div class="calendar-nav">
@@ -557,7 +563,7 @@ body {
         <span>Финансы</span>
     </button>
     <button class="nav-tab" onclick="switchTab('calendar', this)">
-        <span class="emoji">📅</span>
+        <span class="emoji"></span>
         <span>Календарь</span>
     </button>
     <button class="nav-tab" onclick="switchTab('notes', this)">
@@ -571,9 +577,6 @@ body {
 </div>
 
 <script>
-// ==========================================
-// ВСТАВЬ СЮДА СВОЙ FIREBASE CONFIG
-// ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyDOr6kzxayM7fOwuEs4xvbOCPvqicdh890",
   authDomain: "lifehub28.firebaseapp.com",
@@ -588,7 +591,6 @@ let db = null;
 let dataRef = null;
 let isCloudSync = false;
 
-// Инициализация state с защитой
 let state = { 
     finance: [], 
     calendar: [], 
@@ -598,10 +600,10 @@ let state = {
 let calendarDate = new Date();
 
 const CATEGORIES = ['ЗП USDT', 'Роялти', 'Еда', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
+const CURRENCIES = ['USDT', 'RUB'];
 const EVENT_TYPES = ['Встреча', 'Командировка', 'Дедлайн', 'Личное'];
 const TAGS = ['работа', 'личное', 'идеи', 'финансы'];
 
-// Функция для безопасной инициализации state
 function ensureState() {
     if (!state || typeof state !== 'object') {
         state = { finance: [], calendar: [], notes: [] };
@@ -611,7 +613,6 @@ function ensureState() {
     if (!Array.isArray(state.notes)) state.notes = [];
 }
 
-// Проверка Firebase конфигурации
 function checkFirebaseConfig() {
     return firebaseConfig.apiKey && 
            firebaseConfig.apiKey !== "ВСТАВЬ_СЮДА" && 
@@ -619,7 +620,6 @@ function checkFirebaseConfig() {
            firebaseConfig.apiKey.length > 10;
 }
 
-// Инициализация Firebase
 async function initFirebase() {
     if (!checkFirebaseConfig()) {
         console.log("Firebase не настроен, используем localStorage");
@@ -658,7 +658,7 @@ function updateSyncStatus(isOnline) {
 }
 
 function saveState() {
-    ensureState(); // Защита перед сохранением
+    ensureState();
     
     if (isCloudSync && dataRef) {
         import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
@@ -678,7 +678,6 @@ function loadLocalState() {
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
-            // Проверяем структуру
             if (parsed && typeof parsed === 'object') {
                 state.finance = Array.isArray(parsed.finance) ? parsed.finance : [];
                 state.calendar = Array.isArray(parsed.calendar) ? parsed.calendar : [];
@@ -702,7 +701,6 @@ function loadCloudState() {
         fb.onValue(dataRef, (snapshot) => {
             const data = snapshot.val();
             if (data && typeof data === 'object') {
-                // Безопасное присваивание
                 state.finance = Array.isArray(data.finance) ? data.finance : [];
                 state.calendar = Array.isArray(data.calendar) ? data.calendar : [];
                 state.notes = Array.isArray(data.notes) ? data.notes : [];
@@ -723,8 +721,9 @@ function loadCloudState() {
 function seedData() {
     ensureState();
     state.finance = [
-        { id: 'f1', date: '2026-09-15', type: 'Доход', category: 'ЗП USDT', amount: 2000, rate: 95.5, fees: 150, comment: 'Зарплата' },
-        { id: 'f3', date: '2026-09-10', type: 'Расход', category: 'Еда', amount: 120, rate: 95.5, fees: 0, comment: 'Продукты' }
+        { id: 'f1', date: '2026-09-15', type: 'Доход', currency: 'USDT', category: 'ЗП USDT', amount: 2000, rate: 95.5, fees: 150, comment: 'Зарплата' },
+        { id: 'f2', date: '2026-09-16', type: 'Расход', currency: 'RUB', category: 'Еда', amount: 1500, rate: 1, fees: 0, comment: 'Продукты в магазине' },
+        { id: 'f3', date: '2026-09-10', type: 'Расход', currency: 'USDT', category: 'Транспорт', amount: 45, rate: 95.5, fees: 0, comment: 'Такси' }
     ];
     state.calendar = [
         { id: 'c1', title: 'Созвон с командой', datetime: '2026-09-22T10:00', type: 'Встреча', status: 'Запланировано', relationId: null }
@@ -735,9 +734,6 @@ function seedData() {
     saveState();
 }
 
-// ==========================================
-// РЕНДЕРИНГ
-// ==========================================
 function renderAll() {
     ensureState();
     renderFinance();
@@ -746,29 +742,46 @@ function renderAll() {
 }
 
 function calcFiat(item) {
-    return (item.amount * item.rate) - item.fees;
+    if (item.currency === 'RUB') {
+        return item.amount - item.fees;
+    } else {
+        return (item.amount * item.rate) - item.fees;
+    }
 }
 
 function renderFinance() {
     ensureState();
     const tbody = document.getElementById('finance-tbody');
     const stats = document.getElementById('finance-stats');
-    let totalIncome = 0, totalExpense = 0, totalFiat = 0;
+    let totalIncomeUSDT = 0, totalExpenseUSDT = 0;
+    let totalIncomeRUB = 0, totalExpenseRUB = 0;
+    let totalFiat = 0;
     
     if (!state.finance || state.finance.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Нет записей</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Нет записей</td></tr>';
     } else {
         tbody.innerHTML = state.finance.map(item => {
             const fiat = calcFiat(item);
-            if (item.type === 'Доход') totalIncome += item.amount;
-            else totalExpense += item.amount;
+            
+            if (item.currency === 'USDT') {
+                if (item.type === 'Доход') totalIncomeUSDT += item.amount;
+                else totalExpenseUSDT += item.amount;
+            } else {
+                if (item.type === 'Доход') totalIncomeRUB += item.amount;
+                else totalExpenseRUB += item.amount;
+            }
+            
             totalFiat += fiat;
+            
+            const currencyTag = item.currency === 'USDT' ? 'tag-usdt' : 'tag-rub';
+            
             return `
                 <tr>
                     <td class="text-secondary">${item.date.slice(5)}</td>
                     <td><span class="tag ${item.type === 'Доход' ? 'tag-income' : 'tag-expense'}">${item.type}</span></td>
+                    <td><span class="tag ${currencyTag}">${item.currency}</span></td>
                     <td><span class="tag tag-category">${item.category}</span></td>
-                    <td>${item.amount}</td>
+                    <td>${item.amount} ${item.currency}</td>
                     <td><span class="${fiat >= 0 ? 'formula-value' : 'formula-negative'}">${Math.round(fiat)} ₽</span></td>
                     <td>
                         <div class="table-actions">
@@ -780,10 +793,20 @@ function renderFinance() {
             `;
         }).join('');
     }
+    
     stats.innerHTML = `
-        <div class="stat-card"><div class="stat-value income">+${totalIncome}</div><div class="stat-label">Доход</div></div>
-        <div class="stat-card"><div class="stat-value expense">-${totalExpense}</div><div class="stat-label">Расход</div></div>
-        <div class="stat-card"><div class="stat-value balance">${Math.round(totalFiat)} ₽</div><div class="stat-label">Итого</div></div>
+        <div class="stat-card">
+            <div class="stat-value income">+${totalIncomeUSDT} USDT<br>+${totalIncomeRUB} ₽</div>
+            <div class="stat-label">Доходы</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value expense">-${totalExpenseUSDT} USDT<br>-${totalExpenseRUB} ₽</div>
+            <div class="stat-label">Расходы</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value balance">${Math.round(totalFiat)} ₽</div>
+            <div class="stat-label">Итого</div>
+        </div>
     `;
 }
 
@@ -842,7 +865,7 @@ function renderCalendar() {
                     <td>
                         <div class="table-actions">
                             <button class="action-btn" onclick="editItem('calendar', '${ev.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="confirmDelete('calendar', '${ev.id}')">🗑️</button>
+                            <button class="action-btn delete" onclick="confirmDelete('calendar', '${ev.id}')">️</button>
                         </div>
                     </td>
                 </tr>
@@ -882,7 +905,7 @@ function renderNotes() {
                         </div>
                         <div class="table-actions" style="margin-top:8px; justify-content:flex-end;">
                             <button class="action-btn" onclick="event.stopPropagation(); editItem('notes', '${n.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('notes', '${n.id}')">️</button>
+                            <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('notes', '${n.id}')">🗑️</button>
                         </div>
                     </div>
                 `).join('')}
@@ -891,9 +914,6 @@ function renderNotes() {
     }).join('');
 }
 
-// ==========================================
-// МОДАЛЬНЫЕ ОКНА И ДЕЙСТВИЯ
-// ==========================================
 function switchTab(section, btn) {
     document.querySelectorAll('.db-section').forEach(s => s.classList.remove('active'));
     document.getElementById('section-' + section).classList.add('active');
@@ -906,15 +926,17 @@ function openModal(type, editId = null) {
     ensureState();
     const item = editId ? state[type].find(i => i.id === editId) : null;
     const content = document.getElementById('modal-content');
-    let html = `<h3>${item ? '✏️ Редактировать' : '＋ Новая'} запись</h3>`;
+    let html = `<h3>${item ? '️ Редактировать' : '＋ Новая'} запись</h3>`;
     
     if (type === 'finance') {
+        const currency = item ? item.currency : 'USDT';
         html += `
             <div class="form-group"><label>Дата</label><input type="date" class="input-field" id="f-date" value="${item ? item.date : new Date().toISOString().split('T')[0]}"></div>
             <div class="form-group"><label>Тип</label><select class="select-field" id="f-type"><option value="Доход" ${item && item.type==='Доход'?'selected':''}>Доход</option><option value="Расход" ${item && item.type==='Расход'?'selected':''}>Расход</option></select></div>
+            <div class="form-group"><label>Валюта</label><select class="select-field" id="f-currency" onchange="toggleCurrencyFields()"><option value="USDT" ${currency==='USDT'?'selected':''}>USDT</option><option value="RUB" ${currency==='RUB'?'selected':''}>RUB (рубли)</option></select></div>
             <div class="form-group"><label>Категория</label><select class="select-field" id="f-category">${CATEGORIES.map(c => `<option value="${c}" ${item && item.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
-            <div class="form-group"><label>Сумма USDT</label><input type="number" class="input-field" id="f-amount" step="0.01" value="${item ? item.amount : ''}"></div>
-            <div class="form-group"><label>Курс (₽)</label><input type="number" class="input-field" id="f-rate" step="0.01" value="${item ? item.rate : '95'}"></div>
+            <div class="form-group"><label>Сумма</label><input type="number" class="input-field" id="f-amount" step="0.01" value="${item ? item.amount : ''}"></div>
+            <div class="form-group currency-field ${currency === 'USDT' ? 'active' : ''}" id="f-rate-group"><label>Курс (₽ за 1 USDT)</label><input type="number" class="input-field" id="f-rate" step="0.01" value="${item && item.currency === 'USDT' ? item.rate : '95'}"></div>
             <div class="form-group"><label>Комиссии (₽)</label><input type="number" class="input-field" id="f-fees" step="0.01" value="${item ? item.fees : '0'}"></div>
             <div class="form-group"><label>Комментарий</label><textarea class="textarea-field" id="f-comment">${item ? item.comment : ''}</textarea></div>
         `;
@@ -924,7 +946,7 @@ function openModal(type, editId = null) {
             <div class="form-group"><label>Дата и время</label><input type="datetime-local" class="input-field" id="c-datetime" value="${item ? item.datetime : ''}"></div>
             <div class="form-group"><label>Тип</label><select class="select-field" id="c-type">${EVENT_TYPES.map(t => `<option value="${t}" ${item && item.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
             <div class="form-group"><label>Статус</label><select class="select-field" id="c-status"><option value="Запланировано" ${item && item.status==='Запланировано'?'selected':''}>Запланировано</option><option value="Сделано" ${item && item.status==='Сделано'?'selected':''}>Сделано</option></select></div>
-            <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} USDT)</option>`).join('')}</select></div>
+            <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
     } else if (type === 'notes') {
         html += `
@@ -944,31 +966,50 @@ function openModal(type, editId = null) {
     document.getElementById('modal-overlay').classList.add('active');
 }
 
+function toggleCurrencyFields() {
+    const currency = document.getElementById('f-currency').value;
+    const rateGroup = document.getElementById('f-rate-group');
+    if (currency === 'USDT') {
+        rateGroup.classList.add('active');
+    } else {
+        rateGroup.classList.remove('active');
+    }
+}
+
 function closeModal() {
     document.getElementById('modal-overlay').classList.remove('active');
 }
 
 function saveData(type, editId) {
-    ensureState(); // ВАЖНО: гарантируем что state[type] существует
+    ensureState();
     
     let data = {};
     try {
         if (type === 'finance') {
             const amount = parseFloat(document.getElementById('f-amount').value) || 0;
             const date = document.getElementById('f-date').value;
+            const currency = document.getElementById('f-currency').value;
+            
             if (!date || amount === 0) {
                 showNotification('Заполните дату и сумму', 'error');
                 return;
             }
+            
             data = {
                 date: date,
                 type: document.getElementById('f-type').value,
+                currency: currency,
                 category: document.getElementById('f-category').value,
                 amount: amount,
-                rate: parseFloat(document.getElementById('f-rate').value) || 0,
                 fees: parseFloat(document.getElementById('f-fees').value) || 0,
                 comment: document.getElementById('f-comment').value
             };
+            
+            if (currency === 'USDT') {
+                data.rate = parseFloat(document.getElementById('f-rate').value) || 0;
+            } else {
+                data.rate = 1;
+            }
         } else if (type === 'calendar') {
             const title = document.getElementById('c-title').value.trim();
             const datetime = document.getElementById('c-datetime').value;
@@ -998,7 +1039,6 @@ function saveData(type, editId) {
             if (!editId) data.createdAt = Date.now();
         }
 
-        // Защита: проверяем что массив существует
         if (!state[type]) {
             state[type] = [];
         }
@@ -1046,7 +1086,7 @@ function viewNote(id) {
     const content = document.getElementById('modal-content');
     const date = new Date(note.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
     content.innerHTML = `
-        <h3> ${note.title}</h3>
+        <h3>📝 ${note.title}</h3>
         <div style="margin-bottom:16px;"><small style="color:var(--text-secondary);">Создано: ${date}</small></div>
         <div style="margin-bottom:16px;">${note.tags.map(t => `<span class="tag-multi ${t === 'работа' ? 'tag-work' : t === 'личное' ? 'tag-personal' : t === 'идеи' ? 'tag-ideas' : 'tag-finance'}">#${t}</span>`).join('')}</div>
         <div style="background:rgba(0,0,0,0.2); padding:16px; border-radius:10px; line-height:1.5; white-space:pre-wrap; margin-bottom:20px;">${note.content || 'Без содержания'}</div>
@@ -1071,7 +1111,6 @@ function showNotification(message, type) {
     setTimeout(() => el.remove(), 2500);
 }
 
-// Запуск приложения
 initFirebase();
 </script>
 </body>
