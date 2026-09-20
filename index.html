@@ -487,7 +487,7 @@ body {
     <div class="db-section active" id="section-finance">
         <div class="glass-card">
             <div class="card-header">
-                <h2> Финансы</h2>
+                <h2>💰 Финансы</h2>
                 <span class="badge">Table</span>
             </div>
             <div class="stats-row" id="finance-stats"></div>
@@ -588,19 +588,38 @@ let db = null;
 let dataRef = null;
 let isCloudSync = false;
 
-let state = { finance: [], calendar: [], notes: [] };
+// Инициализация state с защитой
+let state = { 
+    finance: [], 
+    calendar: [], 
+    notes: [] 
+};
+
 let calendarDate = new Date();
 
 const CATEGORIES = ['ЗП USDT', 'Роялти', 'Еда', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
 const EVENT_TYPES = ['Встреча', 'Командировка', 'Дедлайн', 'Личное'];
 const TAGS = ['работа', 'личное', 'идеи', 'финансы'];
 
-// Проверка Firebase конфигурации
-function checkFirebaseConfig() {
-    return firebaseConfig.apiKey && firebaseConfig.apiKey !== "ВСТАВЬ_СЮДА" && firebaseConfig.apiKey !== "YOUR_API_KEY";
+// Функция для безопасной инициализации state
+function ensureState() {
+    if (!state || typeof state !== 'object') {
+        state = { finance: [], calendar: [], notes: [] };
+    }
+    if (!Array.isArray(state.finance)) state.finance = [];
+    if (!Array.isArray(state.calendar)) state.calendar = [];
+    if (!Array.isArray(state.notes)) state.notes = [];
 }
 
-// Инициализация Firebase (если конфиг правильный)
+// Проверка Firebase конфигурации
+function checkFirebaseConfig() {
+    return firebaseConfig.apiKey && 
+           firebaseConfig.apiKey !== "ВСТАВЬ_СЮДА" && 
+           firebaseConfig.apiKey !== "YOUR_API_KEY" &&
+           firebaseConfig.apiKey.length > 10;
+}
+
+// Инициализация Firebase
 async function initFirebase() {
     if (!checkFirebaseConfig()) {
         console.log("Firebase не настроен, используем localStorage");
@@ -630,7 +649,7 @@ async function initFirebase() {
 function updateSyncStatus(isOnline) {
     const el = document.getElementById('sync-status');
     if (isOnline) {
-        el.textContent = '️ Синхронизация';
+        el.textContent = '☁️ Синхронизация';
         el.classList.remove('offline');
     } else {
         el.textContent = '💾 Локально';
@@ -639,6 +658,8 @@ function updateSyncStatus(isOnline) {
 }
 
 function saveState() {
+    ensureState(); // Защита перед сохранением
+    
     if (isCloudSync && dataRef) {
         import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
             fb.set(dataRef, state).catch(err => {
@@ -652,11 +673,21 @@ function saveState() {
 }
 
 function loadLocalState() {
+    ensureState();
     const saved = localStorage.getItem('lifehub_local');
     if (saved) {
         try {
-            state = JSON.parse(saved);
+            const parsed = JSON.parse(saved);
+            // Проверяем структуру
+            if (parsed && typeof parsed === 'object') {
+                state.finance = Array.isArray(parsed.finance) ? parsed.finance : [];
+                state.calendar = Array.isArray(parsed.calendar) ? parsed.calendar : [];
+                state.notes = Array.isArray(parsed.notes) ? parsed.notes : [];
+            } else {
+                seedData();
+            }
         } catch(e) {
+            console.error("Ошибка парсинга:", e);
             seedData();
         }
     } else {
@@ -666,20 +697,31 @@ function loadLocalState() {
 }
 
 function loadCloudState() {
+    ensureState();
     import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
         fb.onValue(dataRef, (snapshot) => {
             const data = snapshot.val();
-            if (data) {
-                state = data;
+            if (data && typeof data === 'object') {
+                // Безопасное присваивание
+                state.finance = Array.isArray(data.finance) ? data.finance : [];
+                state.calendar = Array.isArray(data.calendar) ? data.calendar : [];
+                state.notes = Array.isArray(data.notes) ? data.notes : [];
             } else {
                 seedData();
             }
             renderAll();
+        }, (error) => {
+            console.error("Ошибка загрузки из Firebase:", error);
+            loadLocalState();
         });
+    }).catch(err => {
+        console.error("Ошибка импорта Firebase:", err);
+        loadLocalState();
     });
 }
 
 function seedData() {
+    ensureState();
     state.finance = [
         { id: 'f1', date: '2026-09-15', type: 'Доход', category: 'ЗП USDT', amount: 2000, rate: 95.5, fees: 150, comment: 'Зарплата' },
         { id: 'f3', date: '2026-09-10', type: 'Расход', category: 'Еда', amount: 120, rate: 95.5, fees: 0, comment: 'Продукты' }
@@ -697,6 +739,7 @@ function seedData() {
 // РЕНДЕРИНГ
 // ==========================================
 function renderAll() {
+    ensureState();
     renderFinance();
     renderCalendar();
     renderNotes();
@@ -707,11 +750,12 @@ function calcFiat(item) {
 }
 
 function renderFinance() {
+    ensureState();
     const tbody = document.getElementById('finance-tbody');
     const stats = document.getElementById('finance-stats');
     let totalIncome = 0, totalExpense = 0, totalFiat = 0;
     
-    if (state.finance.length === 0) {
+    if (!state.finance || state.finance.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Нет записей</td></tr>';
     } else {
         tbody.innerHTML = state.finance.map(item => {
@@ -751,6 +795,7 @@ function changeMonth(delta) {
 }
 
 function renderCalendar() {
+    ensureState();
     const cal = document.getElementById('calendar');
     document.getElementById('calendar-title').textContent = `${MONTHS[calendarDate.getMonth()]} ${calendarDate.getFullYear()}`;
     const tbody = document.getElementById('calendar-tbody');
@@ -761,10 +806,12 @@ function renderCalendar() {
     const startDay = (firstDay.getDay() + 6) % 7;
     
     const eventDays = new Set();
-    state.calendar.forEach(ev => {
-        const d = new Date(ev.datetime);
-        if (d.getFullYear() === year && d.getMonth() === month) eventDays.add(d.getDate());
-    });
+    if (state.calendar) {
+        state.calendar.forEach(ev => {
+            const d = new Date(ev.datetime);
+            if (d.getFullYear() === year && d.getMonth() === month) eventDays.add(d.getDate());
+        });
+    }
     
     let html = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d => `<div class="calendar-header-cell">${d}</div>`).join('');
     const prevLast = new Date(year, month, 0).getDate();
@@ -782,7 +829,7 @@ function renderCalendar() {
     for (let i = 1; i <= remaining; i++) html += `<div class="calendar-cell other-month">${i}</div>`;
     cal.innerHTML = html;
     
-    if (state.calendar.length === 0) {
+    if (!state.calendar || state.calendar.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Нет событий</td></tr>';
     } else {
         tbody.innerHTML = state.calendar.map(ev => {
@@ -805,8 +852,9 @@ function renderCalendar() {
 }
 
 function renderNotes() {
+    ensureState();
     const container = document.getElementById('board-container');
-    if (state.notes.length === 0) {
+    if (!state.notes || state.notes.length === 0) {
         container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">Нет заметок</div>';
         return;
     }
@@ -815,7 +863,7 @@ function renderNotes() {
     TAGS.forEach(t => grouped[t] = []);
     grouped['другое'] = [];
     state.notes.forEach(n => {
-        if (n.tags.length === 0) grouped['другое'].push(n);
+        if (!n.tags || n.tags.length === 0) grouped['другое'].push(n);
         else n.tags.forEach(t => grouped[t] ? grouped[t].push(n) : grouped['другое'].push(n));
     });
     
@@ -834,7 +882,7 @@ function renderNotes() {
                         </div>
                         <div class="table-actions" style="margin-top:8px; justify-content:flex-end;">
                             <button class="action-btn" onclick="event.stopPropagation(); editItem('notes', '${n.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('notes', '${n.id}')">🗑️</button>
+                            <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('notes', '${n.id}')">️</button>
                         </div>
                     </div>
                 `).join('')}
@@ -855,6 +903,7 @@ function switchTab(section, btn) {
 }
 
 function openModal(type, editId = null) {
+    ensureState();
     const item = editId ? state[type].find(i => i.id === editId) : null;
     const content = document.getElementById('modal-content');
     let html = `<h3>${item ? '✏️ Редактировать' : '＋ Новая'} запись</h3>`;
@@ -900,6 +949,8 @@ function closeModal() {
 }
 
 function saveData(type, editId) {
+    ensureState(); // ВАЖНО: гарантируем что state[type] существует
+    
     let data = {};
     try {
         if (type === 'finance') {
@@ -947,6 +998,11 @@ function saveData(type, editId) {
             if (!editId) data.createdAt = Date.now();
         }
 
+        // Защита: проверяем что массив существует
+        if (!state[type]) {
+            state[type] = [];
+        }
+
         if (editId) {
             const index = state[type].findIndex(i => i.id === editId);
             if (index !== -1) {
@@ -972,21 +1028,25 @@ function editItem(type, id) {
 }
 
 function confirmDelete(type, id) {
+    ensureState();
     if (confirm('Удалить эту запись?')) {
-        state[type] = state[type].filter(i => i.id !== id);
-        saveState();
-        renderAll();
-        showNotification('Удалено', 'success');
+        if (state[type]) {
+            state[type] = state[type].filter(i => i.id !== id);
+            saveState();
+            renderAll();
+            showNotification('Удалено', 'success');
+        }
     }
 }
 
 function viewNote(id) {
+    ensureState();
     const note = state.notes.find(n => n.id === id);
     if (!note) return;
     const content = document.getElementById('modal-content');
     const date = new Date(note.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
     content.innerHTML = `
-        <h3>📝 ${note.title}</h3>
+        <h3> ${note.title}</h3>
         <div style="margin-bottom:16px;"><small style="color:var(--text-secondary);">Создано: ${date}</small></div>
         <div style="margin-bottom:16px;">${note.tags.map(t => `<span class="tag-multi ${t === 'работа' ? 'tag-work' : t === 'личное' ? 'tag-personal' : t === 'идеи' ? 'tag-ideas' : 'tag-finance'}">#${t}</span>`).join('')}</div>
         <div style="background:rgba(0,0,0,0.2); padding:16px; border-radius:10px; line-height:1.5; white-space:pre-wrap; margin-bottom:20px;">${note.content || 'Без содержания'}</div>
