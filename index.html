@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title> Мой LifeHub</title>
+<title>🧠 Мой LifeHub</title>
 <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/index.min.css" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -225,10 +225,12 @@ body {
     text-align: center;
 }
 
-.stat-value { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
+.stat-value { font-size: 1rem; font-weight: 700; margin-bottom: 2px; line-height: 1.3; }
 .stat-value.income { color: #4ade80; }
 .stat-value.expense { color: #f87171; }
 .stat-value.balance { color: #67e8f9; }
+.stat-value.balance.positive { color: #4ade80; }
+.stat-value.balance.negative { color: #f87171; }
 .stat-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; }
 
 .formula-value { font-weight: 600; color: #4ade80; }
@@ -272,6 +274,16 @@ body {
     border-radius: 8px;
     font-size: 0.8rem;
     position: relative;
+    cursor: default;
+}
+.calendar-cell.clickable {
+    cursor: pointer;
+}
+.calendar-cell.clickable:hover {
+    background: rgba(99, 102, 241, 0.15);
+}
+.calendar-cell.clickable:active {
+    background: rgba(99, 102, 241, 0.25);
 }
 .calendar-cell.today { background: rgba(99, 102, 241, 0.25); font-weight: 600; }
 .calendar-cell.has-event::after {
@@ -477,6 +489,30 @@ body {
 
 .currency-field { display: none; }
 .currency-field.active { display: block; }
+
+/* Event popup in calendar */
+.event-popup-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+.event-popup-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.event-popup-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+.event-popup-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
 </style>
 </head>
 <body>
@@ -563,11 +599,11 @@ body {
         <span>Финансы</span>
     </button>
     <button class="nav-tab" onclick="switchTab('calendar', this)">
-        <span class="emoji"></span>
+        <span class="emoji">📅</span>
         <span>Календарь</span>
     </button>
     <button class="nav-tab" onclick="switchTab('notes', this)">
-        <span class="emoji">📝</span>
+        <span class="emoji"></span>
         <span>Заметки</span>
     </button>
 </nav>
@@ -578,7 +614,7 @@ body {
 
 <script>
 const firebaseConfig = {
-    apiKey: "AIzaSyDOr6kzxayM7fOwuEs4xvbOCPvqicdh890",
+  apiKey: "AIzaSyDOr6kzxayM7fOwuEs4xvbOCPvqicdh890",
   authDomain: "lifehub28.firebaseapp.com",
   databaseURL: "https://lifehub28-default-rtdb.firebaseio.com",
   projectId: "lifehub28",
@@ -599,7 +635,8 @@ let state = {
 
 let calendarDate = new Date();
 
-const CATEGORIES = ['ЗП USDT', 'Роялти', 'Еда', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
+// ДОБАВЛЕНЫ новые категории: Продукты, Нужды, Долги
+const CATEGORIES = ['ЗП USDT', 'Роялти', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
 const CURRENCIES = ['USDT', 'RUB'];
 const EVENT_TYPES = ['Встреча', 'Командировка', 'Дедлайн', 'Личное'];
 const TAGS = ['работа', 'личное', 'идеи', 'финансы'];
@@ -722,11 +759,13 @@ function seedData() {
     ensureState();
     state.finance = [
         { id: 'f1', date: '2026-09-15', type: 'Доход', currency: 'USDT', category: 'ЗП USDT', amount: 2000, rate: 95.5, fees: 150, comment: 'Зарплата' },
-        { id: 'f2', date: '2026-09-16', type: 'Расход', currency: 'RUB', category: 'Еда', amount: 1500, rate: 1, fees: 0, comment: 'Продукты в магазине' },
-        { id: 'f3', date: '2026-09-10', type: 'Расход', currency: 'USDT', category: 'Транспорт', amount: 45, rate: 95.5, fees: 0, comment: 'Такси' }
+        { id: 'f2', date: '2026-09-16', type: 'Расход', currency: 'RUB', category: 'Продукты', amount: 1500, rate: 1, fees: 0, comment: 'Магазин' },
+        { id: 'f3', date: '2026-09-10', type: 'Расход', currency: 'USDT', category: 'Транспорт', amount: 45, rate: 95.5, fees: 0, comment: 'Такси' },
+        { id: 'f4', date: '2026-09-17', type: 'Расход', currency: 'RUB', category: 'Нужды', amount: 3000, rate: 1, fees: 0, comment: 'Аптека' }
     ];
     state.calendar = [
-        { id: 'c1', title: 'Созвон с командой', datetime: '2026-09-22T10:00', type: 'Встреча', status: 'Запланировано', relationId: null }
+        { id: 'c1', title: 'Созвон с командой', datetime: '2026-09-22T10:00', type: 'Встреча', status: 'Запланировано', relationId: null, description: 'Обсудить новый модуль курса' },
+        { id: 'c2', title: 'Оплата долга', datetime: '2026-09-25T12:00', type: 'Дедлайн', status: 'Запланировано', relationId: null, description: 'Вернуть 5000₽ другу' }
     ];
     state.notes = [
         { id: 'n1', title: 'Новый модуль для курса', tags: ['работа', 'идеи'], content: 'Добавить раздел про DeFi', createdAt: Date.now() }
@@ -755,7 +794,7 @@ function renderFinance() {
     const stats = document.getElementById('finance-stats');
     let totalIncomeUSDT = 0, totalExpenseUSDT = 0;
     let totalIncomeRUB = 0, totalExpenseRUB = 0;
-    let totalFiat = 0;
+    let totalIncomeFiat = 0, totalExpenseFiat = 0;
     
     if (!state.finance || state.finance.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Нет записей</td></tr>';
@@ -771,7 +810,9 @@ function renderFinance() {
                 else totalExpenseRUB += item.amount;
             }
             
-            totalFiat += fiat;
+            // Считаем отдельно доходы и расходы в фиате
+            if (item.type === 'Доход') totalIncomeFiat += fiat;
+            else totalExpenseFiat += fiat;
             
             const currencyTag = item.currency === 'USDT' ? 'tag-usdt' : 'tag-rub';
             
@@ -794,6 +835,11 @@ function renderFinance() {
         }).join('');
     }
     
+    // ИТОГО = ДОХОД МИНУС РАСХОД
+    const balance = totalIncomeFiat - totalExpenseFiat;
+    const balanceClass = balance >= 0 ? 'balance positive' : 'balance negative';
+    const balanceSign = balance >= 0 ? '+' : '';
+    
     stats.innerHTML = `
         <div class="stat-card">
             <div class="stat-value income">+${totalIncomeUSDT} USDT<br>+${totalIncomeRUB} ₽</div>
@@ -804,8 +850,8 @@ function renderFinance() {
             <div class="stat-label">Расходы</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value balance">${Math.round(totalFiat)} ₽</div>
-            <div class="stat-label">Итого</div>
+            <div class="stat-value ${balanceClass}">${balanceSign}${Math.round(balance)} ₽</div>
+            <div class="stat-label">Баланс</div>
         </div>
     `;
 }
@@ -828,11 +874,16 @@ function renderCalendar() {
     const lastDay = new Date(year, month + 1, 0);
     const startDay = (firstDay.getDay() + 6) % 7;
     
-    const eventDays = new Set();
+    // Группируем события по дням
+    const eventsByDay = {};
     if (state.calendar) {
         state.calendar.forEach(ev => {
             const d = new Date(ev.datetime);
-            if (d.getFullYear() === year && d.getMonth() === month) eventDays.add(d.getDate());
+            if (d.getFullYear() === year && d.getMonth() === month) {
+                const day = d.getDate();
+                if (!eventsByDay[day]) eventsByDay[day] = [];
+                eventsByDay[day].push(ev);
+            }
         });
     }
     
@@ -844,8 +895,13 @@ function renderCalendar() {
     for (let d = 1; d <= lastDay.getDate(); d++) {
         const classes = ['calendar-cell'];
         if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) classes.push('today');
-        if (eventDays.has(d)) classes.push('has-event');
-        html += `<div class="${classes.join(' ')}">${d}</div>`;
+        if (eventsByDay[d] && eventsByDay[d].length > 0) {
+            classes.push('has-event');
+            classes.push('clickable');
+        }
+        // Добавляем обработчик клика для дней с событиями
+        const hasEvents = eventsByDay[d] && eventsByDay[d].length > 0;
+        html += `<div class="${classes.join(' ')}" ${hasEvents ? `onclick="showDayEvents(${year}, ${month}, ${d})"` : ''}>${d}</div>`;
     }
     
     const remaining = (7 - ((startDay + lastDay.getDate()) % 7)) % 7;
@@ -859,19 +915,57 @@ function renderCalendar() {
             const related = ev.relationId ? state.finance.find(f => f.id === ev.relationId) : null;
             return `
                 <tr>
-                    <td>${ev.title}<br><small class="text-secondary">${related ? ' ' + related.category : ''}</small></td>
+                    <td>${ev.title}<br><small class="text-secondary">${related ? '🔗 ' + related.category : ''}</small></td>
                     <td class="text-secondary">${ev.datetime.slice(5, 16).replace('T', ' ')}</td>
                     <td><span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}">${ev.status}</span></td>
                     <td>
                         <div class="table-actions">
-                            <button class="action-btn" onclick="editItem('calendar', '${ev.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="confirmDelete('calendar', '${ev.id}')">️</button>
+                            <button class="action-btn" onclick="editItem('calendar', '${ev.id}')">️</button>
+                            <button class="action-btn delete" onclick="confirmDelete('calendar', '${ev.id}')">🗑️</button>
                         </div>
                     </td>
                 </tr>
             `;
         }).join('');
     }
+}
+
+// НОВАЯ ФУНКЦИЯ: показать события дня при клике на число
+function showDayEvents(year, month, day) {
+    const events = state.calendar.filter(ev => {
+        const d = new Date(ev.datetime);
+        return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
+    });
+    
+    if (events.length === 0) return;
+    
+    const content = document.getElementById('modal-content');
+    const dateStr = `${day} ${MONTHS[month].toLowerCase()} ${year}`;
+    
+    let html = `<h3> ${dateStr}</h3>`;
+    html += `<div style="margin-bottom:16px;color:var(--text-secondary);font-size:0.85rem;">Событий: ${events.length}</div>`;
+    
+    events.forEach(ev => {
+        const time = ev.datetime.slice(11, 16);
+        const related = ev.relationId ? state.finance.find(f => f.id === ev.relationId) : null;
+        html += `
+            <div class="event-popup-item">
+                <div class="event-popup-title">${ev.title}</div>
+                <div class="event-popup-time">🕐 ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
+                ${ev.description ? `<div class="event-popup-desc">${ev.description}</div>` : ''}
+                ${related ? `<div class="event-popup-desc" style="margin-top:6px;">🔗 Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
+            </div>
+        `;
+    });
+    
+    html += `
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">Закрыть</button>
+        </div>
+    `;
+    
+    content.innerHTML = html;
+    document.getElementById('modal-overlay').classList.add('active');
 }
 
 function renderNotes() {
@@ -926,7 +1020,7 @@ function openModal(type, editId = null) {
     ensureState();
     const item = editId ? state[type].find(i => i.id === editId) : null;
     const content = document.getElementById('modal-content');
-    let html = `<h3>${item ? '️ Редактировать' : '＋ Новая'} запись</h3>`;
+    let html = `<h3>${item ? '✏️ Редактировать' : '＋ Новая'} запись</h3>`;
     
     if (type === 'finance') {
         const currency = item ? item.currency : 'USDT';
@@ -946,6 +1040,7 @@ function openModal(type, editId = null) {
             <div class="form-group"><label>Дата и время</label><input type="datetime-local" class="input-field" id="c-datetime" value="${item ? item.datetime : ''}"></div>
             <div class="form-group"><label>Тип</label><select class="select-field" id="c-type">${EVENT_TYPES.map(t => `<option value="${t}" ${item && item.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
             <div class="form-group"><label>Статус</label><select class="select-field" id="c-status"><option value="Запланировано" ${item && item.status==='Запланировано'?'selected':''}>Запланировано</option><option value="Сделано" ${item && item.status==='Сделано'?'selected':''}>Сделано</option></select></div>
+            <div class="form-group"><label>Краткое описание</label><textarea class="textarea-field" id="c-description" placeholder="Необязательно">${item && item.description ? item.description : ''}</textarea></div>
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
     } else if (type === 'notes') {
@@ -1022,6 +1117,7 @@ function saveData(type, editId) {
                 datetime: datetime,
                 type: document.getElementById('c-type').value,
                 status: document.getElementById('c-status').value,
+                description: document.getElementById('c-description').value.trim(),
                 relationId: document.getElementById('c-relation').value || null
             };
         } else if (type === 'notes') {
