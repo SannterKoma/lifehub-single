@@ -22,14 +22,6 @@ body {
     font-family: 'Inter', -apple-system, sans-serif;
     min-height: 100vh;
     background: #000820;
-    color: var(--text-primary);
-    position: relative;
-    overflow-x: hidden;
-}
-
-/* ============ GLITCH GRADIENT BACKGROUNDS ============ */
-/* Variant 1: Animated Mesh (Default) */
-.glitch-bg-1 {
     background-image: 
         radial-gradient(ellipse at 20% 50%, rgba(255, 0, 60, 0.4) 0%, transparent 50%),
         radial-gradient(ellipse at 80% 20%, rgba(0, 255, 208, 0.3) 0%, transparent 50%),
@@ -37,6 +29,8 @@ body {
         radial-gradient(ellipse at 70% 60%, rgba(0, 136, 255, 0.25) 0%, transparent 40%);
     background-size: 200% 200%;
     animation: meshMove 15s ease-in-out infinite;
+    color: var(--text-primary);
+    overflow-x: hidden;
 }
 
 @keyframes meshMove {
@@ -45,215 +39,6 @@ body {
     50% { background-position: 100% 100%; }
     75% { background-position: 0% 100%; }
 }
-
-/* Variant 2: Glitch Lines */
-.glitch-bg-2 {
-    background: #000820;
-    position: relative;
-}
-
-.glitch-bg-2::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0, 255, 208, 0.03) 2px,
-        rgba(0, 255, 208, 0.03) 4px
-    );
-    animation: scanlines 8s linear infinite;
-    pointer-events: none;
-    z-index: 0;
-}
-
-.glitch-bg-2::after {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(255, 0, 60, 0.1) 20%, 
-        transparent 40%,
-        rgba(0, 255, 208, 0.1) 60%,
-        transparent 80%,
-        rgba(179, 0, 255, 0.1) 100%
-    );
-    background-size: 200% 100%;
-    animation: glitchShift 3s ease-in-out infinite;
-    pointer-events: none;
-    z-index: 0;
-}
-
-@keyframes scanlines {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(4px); }
-}
-
-@keyframes glitchShift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-}
-
-/* Variant 3: Floating Orbs */
-.glitch-bg-3 {
-    background: #000820;
-    position: relative;
-}
-
-.orb {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.6;
-    pointer-events: none;
-    z-index: 0;
-}
-
-.orb-1 {
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(255, 0, 60, 0.6) 0%, transparent 70%);
-    top: -100px; left: -100px;
-    animation: orbFloat1 12s ease-in-out infinite;
-}
-
-.orb-2 {
-    width: 350px; height: 350px;
-    background: radial-gradient(circle, rgba(0, 255, 208, 0.5) 0%, transparent 70%);
-    top: 40%; right: -80px;
-    animation: orbFloat2 16s ease-in-out infinite;
-}
-
-.orb-3 {
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(179, 0, 255, 0.5) 0%, transparent 70%);
-    bottom: -50px; left: 30%;
-    animation: orbFloat3 18s ease-in-out infinite;
-}
-
-.orb-4 {
-    width: 250px; height: 250px;
-    background: radial-gradient(circle, rgba(0, 136, 255, 0.4) 0%, transparent 70%);
-    top: 20%; left: 50%;
-    animation: orbFloat4 14s ease-in-out infinite;
-}
-
-@keyframes orbFloat1 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(100px, 80px) scale(1.1); }
-    66% { transform: translate(50px, 120px) scale(0.9); }
-}
-
-@keyframes orbFloat2 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(-80px, -60px) scale(1.15); }
-    66% { transform: translate(-120px, 40px) scale(0.95); }
-}
-
-@keyframes orbFloat3 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(90px, -70px) scale(1.05); }
-    66% { transform: translate(-60px, -90px) scale(1.1); }
-}
-
-@keyframes orbFloat4 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(-100px, 80px) scale(1.2); }
-}
-
-/* Variant 4: Diagonal Shift */
-.glitch-bg-4 {
-    background: linear-gradient(
-        -45deg,
-        #000820,
-        #FF003C,
-        #00FFD0,
-        #B300FF,
-        #0088FF,
-        #000820
-    );
-    background-size: 400% 400%;
-    animation: gradientShift 20s ease infinite;
-}
-
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* Variant 5: Noise Gradient */
-.glitch-bg-5 {
-    background: #000820;
-    position: relative;
-}
-
-.glitch-bg-5::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: 
-        radial-gradient(ellipse at 30% 20%, rgba(255, 0, 60, 0.3) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 80%, rgba(0, 255, 208, 0.3) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(179, 0, 255, 0.2) 0%, transparent 60%);
-    animation: noiseMove 10s steps(10) infinite;
-    pointer-events: none;
-    z-index: 0;
-}
-
-@keyframes noiseMove {
-    0%, 100% { transform: translate(0, 0); }
-    10% { transform: translate(-2%, -1%); }
-    20% { transform: translate(1%, 2%); }
-    30% { transform: translate(-1%, 1%); }
-    40% { transform: translate(2%, -2%); }
-    50% { transform: translate(-1%, -1%); }
-    60% { transform: translate(1%, 1%); }
-    70% { transform: translate(-2%, 2%); }
-    80% { transform: translate(2%, 1%); }
-    90% { transform: translate(-1%, -2%); }
-}
-
-/* Gradient Switcher Button */
-.gradient-switcher {
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    z-index: 150;
-    display: flex;
-    gap: 8px;
-    background: rgba(0, 8, 32, 0.8);
-    backdrop-filter: blur(20px);
-    padding: 8px;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.gradient-dot {
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.gradient-dot:hover {
-    transform: scale(1.1);
-    border-color: rgba(255, 255, 255, 0.6);
-}
-
-.gradient-dot.active {
-    border-color: white;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-}
-
-.gradient-dot:nth-child(1) { background: linear-gradient(135deg, #FF003C, #00FFD0); }
-.gradient-dot:nth-child(2) { background: linear-gradient(135deg, #00FFD0, #B300FF); }
-.gradient-dot:nth-child(3) { background: linear-gradient(135deg, #B300FF, #0088FF); }
-.gradient-dot:nth-child(4) { background: linear-gradient(135deg, #FF003C, #B300FF); }
-.gradient-dot:nth-child(5) { background: linear-gradient(135deg, #0088FF, #00FFD0); }
 
 .container {
     position: relative;
@@ -863,22 +648,7 @@ body {
 }
 </style>
 </head>
-<body class="glitch-bg-3">
-
-<!-- Orbs for variant 3 -->
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-<div class="orb orb-3"></div>
-<div class="orb orb-4"></div>
-
-<!-- Gradient Switcher -->
-<div class="gradient-switcher">
-    <div class="gradient-dot active" onclick="setGradient(1)" title="Mesh Gradient"></div>
-    <div class="gradient-dot" onclick="setGradient(2)" title="Glitch Lines"></div>
-    <div class="gradient-dot" onclick="setGradient(3)" title="Floating Orbs"></div>
-    <div class="gradient-dot" onclick="setGradient(4)" title="Diagonal Shift"></div>
-    <div class="gradient-dot" onclick="setGradient(5)" title="Noise Gradient"></div>
-</div>
+<body>
 
 <div class="sync-status" id="sync-status">💾 Локальный режим</div>
 
@@ -918,7 +688,7 @@ body {
     <div class="db-section" id="section-calendar">
         <div class="glass-card">
             <div class="card-header">
-                <h2> Календарь</h2>
+                <h2>📅 Календарь</h2>
                 <span class="badge">Calendar</span>
             </div>
             <div class="calendar-nav">
@@ -966,7 +736,7 @@ body {
         <span>Календарь</span>
     </button>
     <button class="nav-tab" onclick="switchTab('notes', this)">
-        <span class="emoji"></span>
+        <span class="emoji">📝</span>
         <span>Заметки</span>
     </button>
 </nav>
@@ -1003,24 +773,9 @@ const EVENT_TYPES = ['Встреча', 'Командировка', 'Дедлай
 const TAGS = [
     { id: 'работа', label: '💼 Работа', class: 'work' },
     { id: 'личное', label: '❤️ Личное', class: 'personal' },
-    { id: 'идеи', label: ' Идеи', class: 'ideas' },
-    { id: 'финансы', label: ' Финансы', class: 'finance' }
+    { id: 'идеи', label: '💡 Идеи', class: 'ideas' },
+    { id: 'финансы', label: '💰 Финансы', class: 'finance' }
 ];
-
-// Gradient Switcher
-window.setGradient = function(num) {
-    document.body.className = '';
-    document.body.classList.add('glitch-bg-' + num);
-    
-    // Update active dot
-    document.querySelectorAll('.gradient-dot').forEach((dot, idx) => {
-        if (idx + 1 === num) {
-            dot.classList.add('active');
-        } else {
-            dot.classList.remove('active');
-        }
-    });
-};
 
 window.ensureState = function() {
     if (!state || typeof state !== 'object') {
@@ -1210,7 +965,7 @@ window.renderFinance = function() {
                     <td>
                         <div class="table-actions">
                             <button class="action-btn" onclick="editItem('finance', '${item.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="confirmDelete('finance', '${item.id}')">️</button>
+                            <button class="action-btn delete" onclick="confirmDelete('finance', '${item.id}')">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -1246,7 +1001,7 @@ window.showComment = function(id) {
     const fiat = calcFiat(item);
     
     content.innerHTML = `
-        <h3> Детали платежа</h3>
+        <h3>💬 Детали платежа</h3>
         <div class="comment-popup">
             <div class="comment-popup-title">📅 Дата</div>
             <div class="comment-popup-text">${item.date}</div>
@@ -1260,7 +1015,7 @@ window.showComment = function(id) {
             <div class="comment-popup-text">${item.category}</div>
         </div>
         <div class="comment-popup">
-            <div class="comment-popup-title"> Комментарий</div>
+            <div class="comment-popup-title">📝 Комментарий</div>
             <div class="comment-popup-text">${item.comment || 'Без комментария'}</div>
         </div>
         <div class="modal-actions">
@@ -1374,7 +1129,7 @@ window.showDayEvents = function(year, month, day) {
     const content = document.getElementById('modal-content');
     const dateStr = `${day} ${MONTHS[month].toLowerCase()} ${year}`;
     
-    let html = `<h3>📅 ${dateStr}</h3>`;
+    let html = `<h3> ${dateStr}</h3>`;
     html += `<div style="margin-bottom:16px;color:var(--text-secondary);font-size:0.85rem;">Событий: ${events.length}</div>`;
     
     events.forEach(ev => {
@@ -1479,7 +1234,7 @@ window.openModal = function(type, editId = null) {
     ensureState();
     const item = editId ? state[type].find(i => i.id === editId) : null;
     const content = document.getElementById('modal-content');
-    let html = `<h3>${item ? '✏️ Редактировать' : '＋ Новая'} запись</h3>`;
+    let html = `<h3>${item ? '️ Редактировать' : '＋ Новая'} запись</h3>`;
     
     if (type === 'finance') {
         const currency = item ? item.currency : 'USDT';
@@ -1500,7 +1255,7 @@ window.openModal = function(type, editId = null) {
             <div class="form-group"><label>Тип</label><select class="select-field" id="c-type" onchange="updateMarkerColor()">${EVENT_TYPES.map(t => `<option value="${t}" ${item && item.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
             <div class="form-group"><label>Статус</label><select class="select-field" id="c-status"><option value="Запланировано" ${item && item.status==='Запланировано'?'selected':''}>Запланировано</option><option value="Сделано" ${item && item.status==='Сделано'?'selected':''}>Сделано</option></select></div>
             <div class="form-group"><label>Краткое описание</label><textarea class="textarea-field" id="c-description" placeholder="Необязательно">${item && item.description ? item.description : ''}</textarea></div>
-            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}> Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}>🔴 Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}> Оранжевый</option></select></div>
+            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}>🔴 Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
     } else if (type === 'notes') {
@@ -1651,7 +1406,7 @@ window.saveData = function(type, editId) {
         showNotification(editId ? '✅ Обновлено' : '✅ Добавлено', 'success');
     } catch (error) {
         console.error('Ошибка сохранения:', error);
-        showNotification(' Ошибка: ' + error.message, 'error');
+        showNotification('❌ Ошибка: ' + error.message, 'error');
     }
 };
 
@@ -1680,14 +1435,14 @@ window.viewNote = function(id) {
     const related = note.relationId ? state.finance.find(f => f.id === note.relationId) : null;
     
     content.innerHTML = `
-        <h3>📝 ${note.title}</h3>
+        <h3> ${note.title}</h3>
         <div style="margin-bottom:16px;"><small style="color:var(--text-secondary);">Создано: ${date}</small></div>
         <div style="margin-bottom:16px;">${note.tags.map(t => {
             const tagInfo = TAGS.find(tt => tt.id === t);
             const cls = tagInfo ? tagInfo.class : '';
             return `<span class="tag-multi tag-${cls}">#${t}</span>`;
         }).join('')}</div>
-        ${related ? `<div style="margin-bottom:16px;padding:10px;background:rgba(168,85,247,0.1);border-radius:8px;"><small style="color:#c4b5fd;">🔗 Связано с финансами: ${related.category} (${related.amount} ${related.currency})</small></div>` : ''}
+        ${related ? `<div style="margin-bottom:16px;padding:10px;background:rgba(168,85,247,0.1);border-radius:8px;"><small style="color:#c4b5fd;"> Связано с финансами: ${related.category} (${related.amount} ${related.currency})</small></div>` : ''}
         <div style="background:rgba(0,0,0,0.2); padding:16px; border-radius:10px; line-height:1.5; white-space:pre-wrap; margin-bottom:20px;">${note.content || 'Без содержания'}</div>
         <div class="modal-actions">
             <button class="btn btn-secondary" onclick="closeModal()">Закрыть</button>
@@ -1710,9 +1465,7 @@ window.showNotification = function(message, type) {
     setTimeout(() => el.remove(), 3000);
 };
 
-// Запуск
 initFirebase();
 </script>
-
 </body>
 </html>
