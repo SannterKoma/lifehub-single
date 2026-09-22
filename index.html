@@ -435,6 +435,63 @@ body {
 .select-field option { background: #1a1a3e; }
 .textarea-field { resize: vertical; min-height: 100px; }
 
+/* Checkbox tags */
+.tags-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.tag-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tag-checkbox:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tag-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--indigo);
+}
+
+.tag-checkbox label {
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin: 0;
+    text-transform: none;
+    color: var(--text-primary);
+}
+
+.tag-checkbox.work { border-color: rgba(99, 102, 241, 0.3); }
+.tag-checkbox.work input:checked { accent-color: var(--indigo); }
+.tag-checkbox.work input:checked + label { color: #a5b4fc; }
+
+.tag-checkbox.personal { border-color: rgba(236, 72, 153, 0.3); }
+.tag-checkbox.personal input:checked { accent-color: #ec4899; }
+.tag-checkbox.personal input:checked + label { color: #f9a8d4; }
+
+.tag-checkbox.ideas { border-color: rgba(251, 191, 36, 0.3); }
+.tag-checkbox.ideas input:checked { accent-color: #fbbf24; }
+.tag-checkbox.ideas input:checked + label { color: #fde68a; }
+
+.tag-checkbox.finance { border-color: rgba(34, 197, 94, 0.3); }
+.tag-checkbox.finance input:checked { accent-color: #22c55e; }
+.tag-checkbox.finance input:checked + label { color: #4ade80; }
+
 .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
 .btn {
     flex: 1;
@@ -538,7 +595,7 @@ body {
 </head>
 <body>
 
-<div class="sync-status" id="sync-status"> Локальный режим</div>
+<div class="sync-status" id="sync-status">💾 Локальный режим</div>
 
 <div class="container">
     <div class="page-header">
@@ -576,7 +633,7 @@ body {
     <div class="db-section" id="section-calendar">
         <div class="glass-card">
             <div class="card-header">
-                <h2>📅 Календарь</h2>
+                <h2> Календарь</h2>
                 <span class="badge">Calendar</span>
             </div>
             <div class="calendar-nav">
@@ -605,7 +662,7 @@ body {
     <div class="db-section" id="section-notes">
         <div class="glass-card">
             <div class="card-header">
-                <h2>📝 Заметки</h2>
+                <h2> Заметки</h2>
                 <span class="badge">Board</span>
             </div>
             <div class="board-container" id="board-container"></div>
@@ -659,7 +716,12 @@ let calendarDate = new Date();
 const CATEGORIES = ['ЗП USDT', 'Роялти', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
 const CURRENCIES = ['USDT', 'RUB'];
 const EVENT_TYPES = ['Встреча', 'Командировка', 'Дедлайн', 'Личное'];
-const TAGS = ['работа', 'личное', 'идеи', 'финансы'];
+const TAGS = [
+    { id: 'работа', label: '💼 Работа', class: 'work' },
+    { id: 'личное', label: '❤️ Личное', class: 'personal' },
+    { id: 'идеи', label: '💡 Идеи', class: 'ideas' },
+    { id: 'финансы', label: '💰 Финансы', class: 'finance' }
+];
 
 function ensureState() {
     if (!state || typeof state !== 'object') {
@@ -716,7 +778,6 @@ function updateSyncStatus(isOnline) {
 
 function saveState() {
     ensureState();
-    console.log("💾 Сохранение state:", state);
     
     if (isCloudSync && dataRef) {
         import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
@@ -728,9 +789,8 @@ function saveState() {
     } else {
         try {
             localStorage.setItem('lifehub_local', JSON.stringify(state));
-            console.log("✅ Сохранено в localStorage");
         } catch (e) {
-            console.error("❌ Ошибка localStorage:", e);
+            console.error("Ошибка localStorage:", e);
             showNotification("Ошибка сохранения: " + e.message, "error");
         }
     }
@@ -742,7 +802,6 @@ function loadLocalState() {
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
-            console.log(" Загружено из localStorage:", parsed);
             if (parsed && typeof parsed === 'object') {
                 state.finance = Array.isArray(parsed.finance) ? parsed.finance : [];
                 state.calendar = Array.isArray(parsed.calendar) ? parsed.calendar : [];
@@ -755,7 +814,6 @@ function loadLocalState() {
             seedData();
         }
     } else {
-        console.log("🌱 Первый запуск, создаём тестовые данные");
         seedData();
     }
     renderAll();
@@ -766,7 +824,6 @@ function loadCloudState() {
     import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
         fb.onValue(dataRef, (snapshot) => {
             const data = snapshot.val();
-            console.log("📥 Загружено из Firebase:", data);
             if (data && typeof data === 'object') {
                 state.finance = Array.isArray(data.finance) ? data.finance : [];
                 state.calendar = Array.isArray(data.calendar) ? data.calendar : [];
@@ -797,13 +854,11 @@ function seedData() {
     state.notes = [
         { id: 'n1', title: 'Новый модуль для курса', tags: ['работа', 'идеи'], content: 'Добавить раздел про DeFi', createdAt: Date.now(), relationId: null }
     ];
-    console.log("🌱 Созданы тестовые данные:", state);
     saveState();
 }
 
 function renderAll() {
     ensureState();
-    console.log(" renderAll вызван. Заметок:", state.notes.length);
     renderFinance();
     renderCalendar();
     renderNotes();
@@ -1006,7 +1061,7 @@ function showDayEvents(year, month, day) {
                 <div class="event-popup-title">${ev.title}</div>
                 <div class="event-popup-time">🕐 ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
                 ${ev.description ? `<div class="event-popup-desc">${ev.description}</div>` : ''}
-                ${related ? `<div class="event-popup-desc" style="margin-top:6px;">🔗 Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
+                ${related ? `<div class="event-popup-desc" style="margin-top:6px;"> Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
             </div>
         `;
     });
@@ -1023,24 +1078,17 @@ function showDayEvents(year, month, day) {
 
 function renderNotes() {
     ensureState();
-    console.log("📝 renderNotes вызван. Заметок в state:", state.notes.length);
     const container = document.getElementById('board-container');
     
-    if (!container) {
-        console.error(" Не найден элемент board-container");
-        return;
-    }
+    if (!container) return;
     
     if (!state.notes || state.notes.length === 0) {
-        console.log("⚠️ Заметок нет, показываем empty state");
         container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">Нет заметок</div>';
         return;
     }
     
-    console.log("📋 Рендерим заметки:", state.notes);
-    
     const grouped = {};
-    TAGS.forEach(t => grouped[t] = []);
+    TAGS.forEach(t => grouped[t.id] = []);
     grouped['другое'] = [];
     
     state.notes.forEach(n => {
@@ -1055,11 +1103,10 @@ function renderNotes() {
     });
     
     container.innerHTML = TAGS.map(tag => {
-        const items = grouped[tag];
-        console.log(`  Колонка #${tag}: ${items.length} заметок`);
+        const items = grouped[tag.id];
         return `
             <div class="board-column">
-                <div class="board-column-title"><span>#${tag}</span><span class="board-count">${items.length}</span></div>
+                <div class="board-column-title"><span>${tag.label}</span><span class="board-count">${items.length}</span></div>
                 ${items.length === 0 ? '<div style="font-size:0.7rem;color:var(--text-secondary);text-align:center;padding:10px;">Пусто</div>' : 
                 items.map(n => {
                     const related = n.relationId ? state.finance.find(f => f.id === n.relationId) : null;
@@ -1067,9 +1114,13 @@ function renderNotes() {
                     <div class="board-item" onclick="viewNote('${n.id}')">
                         <div class="board-item-title">${n.title}</div>
                         <div class="board-item-content">${n.content || 'Без содержания'}</div>
-                        ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;"> ${related.category}</div>` : ''}
+                        ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;">🔗 ${related.category}</div>` : ''}
                         <div class="board-item-meta">
-                            ${n.tags.map(t => `<span class="tag-multi ${t === 'работа' ? 'tag-work' : t === 'личное' ? 'tag-personal' : t === 'идеи' ? 'tag-ideas' : 'tag-finance'}">#${t}</span>`).join('')}
+                            ${n.tags.map(t => {
+                                const tagInfo = TAGS.find(tt => tt.id === t);
+                                const cls = tagInfo ? tagInfo.class : '';
+                                return `<span class="tag-multi tag-${cls}">#${t}</span>`;
+                            }).join('')}
                         </div>
                         <div class="table-actions" style="margin-top:8px; justify-content:flex-end;">
                             <button class="action-btn" onclick="event.stopPropagation(); editItem('notes', '${n.id}')">✏️</button>
@@ -1080,8 +1131,6 @@ function renderNotes() {
             </div>
         `;
     }).join('');
-    
-    console.log("✅ Заметки отрендерены");
 }
 
 function switchTab(section, btn) {
@@ -1090,10 +1139,7 @@ function switchTab(section, btn) {
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
     if (section === 'calendar') renderCalendar();
-    if (section === 'notes') {
-        console.log("🔄 Переключены на заметки, вызываем renderNotes");
-        renderNotes();
-    }
+    if (section === 'notes') renderNotes();
 }
 
 function openModal(type, editId = null) {
@@ -1125,9 +1171,20 @@ function openModal(type, editId = null) {
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
     } else if (type === 'notes') {
+        const selectedTags = item && item.tags ? item.tags : [];
         html += `
             <div class="form-group"><label>Тема</label><input type="text" class="input-field" id="n-title" value="${item && item.title ? item.title : ''}"></div>
-            <div class="form-group"><label>Теги (через запятую)</label><input type="text" class="input-field" id="n-tags" value="${item && item.tags ? item.tags.join(', ') : ''}"><small style="color:var(--text-secondary);font-size:0.65rem;">${TAGS.map(t=>'#'+t).join(', ')}</small></div>
+            <div class="form-group">
+                <label>Теги (выберите один или несколько)</label>
+                <div class="tags-container">
+                    ${TAGS.map(tag => `
+                        <div class="tag-checkbox ${tag.class}">
+                            <input type="checkbox" id="tag-${tag.id}" value="${tag.id}" ${selectedTags.includes(tag.id) ? 'checked' : ''}>
+                            <label for="tag-${tag.id}">${tag.label}</label>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
             <div class="form-group"><label>Содержание</label><textarea class="textarea-field" id="n-content" style="min-height:120px;">${item && item.content ? item.content : ''}</textarea></div>
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="n-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
@@ -1173,8 +1230,6 @@ function saveData(type, editId) {
     
     let data = {};
     try {
-        console.log("💾 Начало сохранения:", type, "editId:", editId);
-        
         if (type === 'finance') {
             const amount = parseFloat(document.getElementById('f-amount').value) || 0;
             const date = document.getElementById('f-date').value;
@@ -1217,40 +1272,31 @@ function saveData(type, editId) {
                 relationId: document.getElementById('c-relation').value || null
             };
         } else if (type === 'notes') {
-            const titleEl = document.getElementById('n-title');
-            const tagsEl = document.getElementById('n-tags');
-            const contentEl = document.getElementById('n-content');
-            const relationEl = document.getElementById('n-relation');
-            
-            if (!titleEl || !tagsEl || !contentEl || !relationEl) {
-                showNotification('Ошибка: форма не загружена', 'error');
-                console.error("Элементы формы не найдены");
-                return;
-            }
-            
-            const title = titleEl.value.trim();
+            const title = document.getElementById('n-title').value.trim();
             if (!title) {
                 showNotification('Введите тему заметки', 'error');
                 return;
             }
             
-            const tagsRaw = tagsEl.value || '';
-            const tags = tagsRaw.split(',')
-                .map(t => t.trim().replace(/^#/, '').toLowerCase())
-                .filter(t => TAGS.includes(t));
+            // Собираем выбранные теги из чекбоксов
+            const selectedTags = [];
+            TAGS.forEach(tag => {
+                const checkbox = document.getElementById(`tag-${tag.id}`);
+                if (checkbox && checkbox.checked) {
+                    selectedTags.push(tag.id);
+                }
+            });
             
             data = {
                 title: title,
-                tags: tags,
-                content: contentEl.value || '',
-                relationId: relationEl.value || null
+                tags: selectedTags,
+                content: document.getElementById('n-content').value || '',
+                relationId: document.getElementById('n-relation').value || null
             };
             
             if (!editId) {
                 data.createdAt = Date.now();
             }
-            
-            console.log("📝 Данные заметки:", data);
         }
 
         if (!state[type]) {
@@ -1261,22 +1307,18 @@ function saveData(type, editId) {
             const index = state[type].findIndex(i => i.id === editId);
             if (index !== -1) {
                 state[type][index] = { ...state[type][index], ...data };
-                console.log("✏️ Обновлено:", state[type][index]);
             }
         } else {
             data.id = type[0] + Date.now();
             state[type].push(data);
-            console.log("➕ Добавлено:", data);
         }
-        
-        console.log("📦 Полный state после изменения:", state);
         
         saveState();
         renderAll();
         closeModal();
         showNotification(editId ? '✅ Обновлено' : '✅ Добавлено', 'success');
     } catch (error) {
-        console.error('❌ Ошибка сохранения:', error);
+        console.error('Ошибка сохранения:', error);
         showNotification('❌ Ошибка: ' + error.message, 'error');
     }
 }
@@ -1308,7 +1350,11 @@ function viewNote(id) {
     content.innerHTML = `
         <h3>📝 ${note.title}</h3>
         <div style="margin-bottom:16px;"><small style="color:var(--text-secondary);">Создано: ${date}</small></div>
-        <div style="margin-bottom:16px;">${note.tags.map(t => `<span class="tag-multi ${t === 'работа' ? 'tag-work' : t === 'личное' ? 'tag-personal' : t === 'идеи' ? 'tag-ideas' : 'tag-finance'}">#${t}</span>`).join('')}</div>
+        <div style="margin-bottom:16px;">${note.tags.map(t => {
+            const tagInfo = TAGS.find(tt => tt.id === t);
+            const cls = tagInfo ? tagInfo.class : '';
+            return `<span class="tag-multi tag-${cls}">#${t}</span>`;
+        }).join('')}</div>
         ${related ? `<div style="margin-bottom:16px;padding:10px;background:rgba(168,85,247,0.1);border-radius:8px;"><small style="color:#c4b5fd;">🔗 Связано с финансами: ${related.category} (${related.amount} ${related.currency})</small></div>` : ''}
         <div style="background:rgba(0,0,0,0.2); padding:16px; border-radius:10px; line-height:1.5; white-space:pre-wrap; margin-bottom:20px;">${note.content || 'Без содержания'}</div>
         <div class="modal-actions">
