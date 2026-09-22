@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🧠 Мой LifeHub</title>
+<title> Мой LifeHub</title>
 <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/index.min.css" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -43,7 +43,7 @@ body {
 .container {
     position: relative;
     z-index: 10;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 20px 16px 100px;
 }
@@ -85,11 +85,36 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .card-header h2 {
     font-size: 1.2rem;
     font-weight: 600;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.view-btn {
+    padding: 6px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.view-btn.active {
+    background: rgba(99, 102, 241, 0.3);
+    border-color: rgba(99, 102, 241, 0.5);
+    color: var(--text-primary);
 }
 
 .badge {
@@ -278,6 +303,90 @@ body {
 }
 .formula-value:hover, .formula-negative:hover {
     background: rgba(255, 255, 255, 0.1);
+}
+
+/* Board View for Finance */
+.finance-board-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.finance-column {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.finance-column-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+}
+
+.finance-column-total {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.finance-item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.finance-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateY(-2px);
+}
+
+.finance-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.finance-item-amount {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.finance-item-date {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.finance-item-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.finance-item-currency {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.finance-item-actions {
+    display: flex;
+    gap: 4px;
 }
 
 .calendar-nav {
@@ -646,11 +755,15 @@ body {
     white-space: pre-wrap;
     word-break: break-word;
 }
+
+/* Hide table when board view is active */
+.finance-view.table .finance-board-container { display: none; }
+.finance-view.board .db-table-wrapper { display: none; }
 </style>
 </head>
 <body>
 
-<div class="sync-status" id="sync-status">💾 Локальный режим</div>
+<div class="sync-status" id="sync-status"> Локальный режим</div>
 
 <div class="container">
     <div class="page-header">
@@ -662,10 +775,18 @@ body {
         <div class="glass-card">
             <div class="card-header">
                 <h2>💰 Финансы</h2>
-                <span class="badge">Table</span>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <span class="badge" id="finance-view-badge">Table</span>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="setFinanceView('table')" id="btn-table">Таблица</button>
+                        <button class="view-btn" onclick="setFinanceView('board')" id="btn-board">Доска</button>
+                    </div>
+                </div>
             </div>
             <div class="stats-row" id="finance-stats"></div>
-            <div style="overflow-x: auto;">
+            
+            <!-- Table View -->
+            <div class="db-table-wrapper" style="overflow-x: auto;">
                 <table class="db-table">
                     <thead>
                         <tr>
@@ -681,6 +802,10 @@ body {
                     <tbody id="finance-tbody"></tbody>
                 </table>
             </div>
+            
+            <!-- Board View -->
+            <div class="finance-board-container" id="finance-board"></div>
+            
             <button class="btn-add" onclick="openModal('finance')">＋ Добавить запись</button>
         </div>
     </div>
@@ -717,7 +842,7 @@ body {
     <div class="db-section" id="section-notes">
         <div class="glass-card">
             <div class="card-header">
-                <h2> Заметки</h2>
+                <h2>📝 Заметки</h2>
                 <span class="badge">Board</span>
             </div>
             <div class="board-container" id="board-container"></div>
@@ -755,7 +880,7 @@ const firebaseConfig = {
   messagingSenderId: "283957281646",
   appId: "1:283957281646:web:fa59629284fb259ad3377f"
 };
-
+    
 let db = null;
 let dataRef = null;
 let isCloudSync = false;
@@ -767,8 +892,10 @@ let state = {
 };
 
 let calendarDate = new Date();
+let financeView = 'table'; // 'table' or 'board'
 
 const CATEGORIES = ['ЗП USDT', 'Роялти', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
+const EXPENSE_CATEGORIES = ['Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
 const EVENT_TYPES = ['Встреча', 'Командировка', 'Дедлайн', 'Личное'];
 const TAGS = [
     { id: 'работа', label: '💼 Работа', class: 'work' },
@@ -776,6 +903,30 @@ const TAGS = [
     { id: 'идеи', label: '💡 Идеи', class: 'ideas' },
     { id: 'финансы', label: '💰 Финансы', class: 'finance' }
 ];
+
+window.setFinanceView = function(view) {
+    financeView = view;
+    const container = document.querySelector('.glass-card');
+    const badge = document.getElementById('finance-view-badge');
+    const btnTable = document.getElementById('btn-table');
+    const btnBoard = document.getElementById('btn-board');
+    
+    if (view === 'table') {
+        container.classList.remove('board');
+        container.classList.add('table');
+        badge.textContent = 'Table';
+        btnTable.classList.add('active');
+        btnBoard.classList.remove('active');
+    } else {
+        container.classList.remove('table');
+        container.classList.add('board');
+        badge.textContent = 'Board';
+        btnTable.classList.remove('active');
+        btnBoard.classList.add('active');
+    }
+    
+    renderFinance();
+};
 
 window.ensureState = function() {
     if (!state || typeof state !== 'object') {
@@ -900,7 +1051,8 @@ window.seedData = function() {
     ensureState();
     state.finance = [
         { id: 'f1', date: '2026-09-15', type: 'Доход', currency: 'USDT', category: 'ЗП USDT', amount: 2000, rate: 95.5, fees: 150, comment: 'Зарплата за сентябрь' },
-        { id: 'f2', date: '2026-09-16', type: 'Расход', currency: 'RUB', category: 'Продукты', amount: 1500, rate: 1, fees: 0, comment: 'Магазин Пятёрочка' }
+        { id: 'f2', date: '2026-09-16', type: 'Расход', currency: 'RUB', category: 'Продукты', amount: 1500, rate: 1, fees: 0, comment: 'Магазин Пятёрочка' },
+        { id: 'f3', date: '2026-09-17', type: 'Расход', currency: 'RUB', category: 'Быт', amount: 2500, rate: 1, fees: 0, comment: 'Коммуналка' }
     ];
     state.calendar = [
         { id: 'c1', title: 'Созвон с командой', datetime: '2026-09-22T10:00', type: 'Встреча', status: 'Запланировано', relationId: null, description: 'Обсудить новый модуль', markerColor: 'blue' }
@@ -928,29 +1080,24 @@ window.calcFiat = function(item) {
 
 window.renderFinance = function() {
     ensureState();
+    
+    if (financeView === 'table') {
+        renderFinanceTable();
+    } else {
+        renderFinanceBoard();
+    }
+    
+    renderFinanceStats();
+};
+
+window.renderFinanceTable = function() {
     const tbody = document.getElementById('finance-tbody');
-    const stats = document.getElementById('finance-stats');
-    let totalIncomeUSDT = 0, totalExpenseUSDT = 0;
-    let totalIncomeRUB = 0, totalExpenseRUB = 0;
-    let totalIncomeFiat = 0, totalExpenseFiat = 0;
     
     if (!state.finance || state.finance.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Нет записей</td></tr>';
     } else {
         tbody.innerHTML = state.finance.map(item => {
             const fiat = calcFiat(item);
-            
-            if (item.currency === 'USDT') {
-                if (item.type === 'Доход') totalIncomeUSDT += item.amount;
-                else totalExpenseUSDT += item.amount;
-            } else {
-                if (item.type === 'Доход') totalIncomeRUB += item.amount;
-                else totalExpenseRUB += item.amount;
-            }
-            
-            if (item.type === 'Доход') totalIncomeFiat += fiat;
-            else totalExpenseFiat += fiat;
-            
             const currencyTag = item.currency === 'USDT' ? 'tag-usdt' : 'tag-rub';
             const hasComment = item.comment && item.comment.trim() !== '';
             
@@ -965,12 +1112,102 @@ window.renderFinance = function() {
                     <td>
                         <div class="table-actions">
                             <button class="action-btn" onclick="editItem('finance', '${item.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="confirmDelete('finance', '${item.id}')">🗑️</button>
+                            <button class="action-btn delete" onclick="confirmDelete('finance', '${item.id}')">️</button>
                         </div>
                     </td>
                 </tr>
             `;
         }).join('');
+    }
+};
+
+window.renderFinanceBoard = function() {
+    const board = document.getElementById('finance-board');
+    
+    if (!state.finance || state.finance.length === 0) {
+        board.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">Нет записей</div>';
+        return;
+    }
+    
+    // Group by category (only expense categories for board view)
+    const grouped = {};
+    EXPENSE_CATEGORIES.forEach(cat => grouped[cat] = []);
+    grouped['Доходы'] = [];
+    grouped['Другое'] = [];
+    
+    state.finance.forEach(item => {
+        if (item.type === 'Доход') {
+            grouped['Доходы'].push(item);
+        } else if (grouped[item.category]) {
+            grouped[item.category].push(item);
+        } else {
+            grouped['Другое'].push(item);
+        }
+    });
+    
+    // Render columns
+    const columns = ['Доходы', ...EXPENSE_CATEGORIES, 'Другое'];
+    
+    board.innerHTML = columns.map(category => {
+        const items = grouped[category];
+        const total = items.reduce((sum, item) => sum + calcFiat(item), 0);
+        const isIncome = category === 'Доходы';
+        const totalClass = total >= 0 ? 'formula-value' : 'formula-negative';
+        
+        return `
+            <div class="finance-column">
+                <div class="finance-column-title">
+                    <span>${category}</span>
+                    <span class="finance-column-total ${totalClass}">${Math.round(total)} ₽</span>
+                </div>
+                ${items.length === 0 ? '<div style="font-size:0.75rem;color:var(--text-secondary);text-align:center;padding:20px 0;">Пусто</div>' : 
+                items.map(item => {
+                    const fiat = calcFiat(item);
+                    const hasComment = item.comment && item.comment.trim() !== '';
+                    return `
+                        <div class="finance-item" onclick="showComment('${item.id}')">
+                            <div class="finance-item-header">
+                                <span class="finance-item-amount ${fiat >= 0 ? 'formula-value' : 'formula-negative'}">${Math.round(fiat)} ₽${hasComment ? ' 💬' : ''}</span>
+                                <span class="finance-item-date">${item.date.slice(5)}</span>
+                            </div>
+                            <div style="font-size:0.8rem;margin-bottom:6px;">${item.amount} ${item.currency}</div>
+                            <div class="finance-item-meta">
+                                <span class="finance-item-currency">${item.currency}</span>
+                                <div class="finance-item-actions">
+                                    <button class="action-btn" onclick="event.stopPropagation(); editItem('finance', '${item.id}')">✏️</button>
+                                    <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('finance', '${item.id}')">🗑️</button>
+                                </div>
+                            </div>
+                            ${item.comment ? `<div style="font-size:0.7rem;color:var(--text-secondary);margin-top:6px;max-height:40px;overflow:hidden;text-overflow:ellipsis;">${item.comment}</div>` : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }).join('');
+};
+
+window.renderFinanceStats = function() {
+    const stats = document.getElementById('finance-stats');
+    let totalIncomeUSDT = 0, totalExpenseUSDT = 0;
+    let totalIncomeRUB = 0, totalExpenseRUB = 0;
+    let totalIncomeFiat = 0, totalExpenseFiat = 0;
+    
+    if (state.finance) {
+        state.finance.forEach(item => {
+            const fiat = calcFiat(item);
+            
+            if (item.currency === 'USDT') {
+                if (item.type === 'Доход') totalIncomeUSDT += item.amount;
+                else totalExpenseUSDT += item.amount;
+            } else {
+                if (item.type === 'Доход') totalIncomeRUB += item.amount;
+                else totalExpenseRUB += item.amount;
+            }
+            
+            if (item.type === 'Доход') totalIncomeFiat += fiat;
+            else totalExpenseFiat += fiat;
+        });
     }
     
     const balance = totalIncomeFiat - totalExpenseFiat;
@@ -1007,15 +1244,15 @@ window.showComment = function(id) {
             <div class="comment-popup-text">${item.date}</div>
         </div>
         <div class="comment-popup">
+            <div class="comment-popup-title"> Категория</div>
+            <div class="comment-popup-text">${item.category}</div>
+        </div>
+        <div class="comment-popup">
             <div class="comment-popup-title">💰 Сумма</div>
             <div class="comment-popup-text">${item.amount} ${item.currency} → ${Math.round(fiat)} ₽</div>
         </div>
         <div class="comment-popup">
-            <div class="comment-popup-title">📊 Категория</div>
-            <div class="comment-popup-text">${item.category}</div>
-        </div>
-        <div class="comment-popup">
-            <div class="comment-popup-title">📝 Комментарий</div>
+            <div class="comment-popup-title"> Комментарий</div>
             <div class="comment-popup-text">${item.comment || 'Без комментария'}</div>
         </div>
         <div class="modal-actions">
@@ -1103,7 +1340,7 @@ window.renderCalendar = function() {
             const related = ev.relationId ? state.finance.find(f => f.id === ev.relationId) : null;
             return `
                 <tr>
-                    <td>${ev.title}<br><small class="text-secondary">${related ? '🔗 ' + related.category : ''}</small></td>
+                    <td>${ev.title}<br><small class="text-secondary">${related ? ' ' + related.category : ''}</small></td>
                     <td class="text-secondary">${ev.datetime.slice(5, 16).replace('T', ' ')}</td>
                     <td><span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}">${ev.status}</span></td>
                     <td>
@@ -1129,7 +1366,7 @@ window.showDayEvents = function(year, month, day) {
     const content = document.getElementById('modal-content');
     const dateStr = `${day} ${MONTHS[month].toLowerCase()} ${year}`;
     
-    let html = `<h3> ${dateStr}</h3>`;
+    let html = `<h3>📅 ${dateStr}</h3>`;
     html += `<div style="margin-bottom:16px;color:var(--text-secondary);font-size:0.85rem;">Событий: ${events.length}</div>`;
     
     events.forEach(ev => {
@@ -1147,7 +1384,7 @@ window.showDayEvents = function(year, month, day) {
         html += `
             <div class="event-popup-item ${colorClass}">
                 <div class="event-popup-title">${ev.title}</div>
-                <div class="event-popup-time">🕐 ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
+                <div class="event-popup-time"> ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
                 ${ev.description ? `<div class="event-popup-desc">${ev.description}</div>` : ''}
                 ${related ? `<div class="event-popup-desc" style="margin-top:6px;">🔗 Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
             </div>
@@ -1202,7 +1439,7 @@ window.renderNotes = function() {
                     <div class="board-item" onclick="viewNote('${n.id}')">
                         <div class="board-item-title">${n.title}</div>
                         <div class="board-item-content">${n.content || 'Без содержания'}</div>
-                        ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;">🔗 ${related.category}</div>` : ''}
+                        ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;"> ${related.category}</div>` : ''}
                         <div class="board-item-meta">
                             ${n.tags.map(t => {
                                 const tagInfo = TAGS.find(tt => tt.id === t);
@@ -1228,13 +1465,14 @@ window.switchTab = function(section, btn) {
     btn.classList.add('active');
     if (section === 'calendar') renderCalendar();
     if (section === 'notes') renderNotes();
+    if (section === 'finance') renderFinance();
 };
 
 window.openModal = function(type, editId = null) {
     ensureState();
     const item = editId ? state[type].find(i => i.id === editId) : null;
     const content = document.getElementById('modal-content');
-    let html = `<h3>${item ? '️ Редактировать' : '＋ Новая'} запись</h3>`;
+    let html = `<h3>${item ? '✏️ Редактировать' : '＋ Новая'} запись</h3>`;
     
     if (type === 'finance') {
         const currency = item ? item.currency : 'USDT';
@@ -1435,14 +1673,14 @@ window.viewNote = function(id) {
     const related = note.relationId ? state.finance.find(f => f.id === note.relationId) : null;
     
     content.innerHTML = `
-        <h3> ${note.title}</h3>
+        <h3>📝 ${note.title}</h3>
         <div style="margin-bottom:16px;"><small style="color:var(--text-secondary);">Создано: ${date}</small></div>
         <div style="margin-bottom:16px;">${note.tags.map(t => {
             const tagInfo = TAGS.find(tt => tt.id === t);
             const cls = tagInfo ? tagInfo.class : '';
             return `<span class="tag-multi tag-${cls}">#${t}</span>`;
         }).join('')}</div>
-        ${related ? `<div style="margin-bottom:16px;padding:10px;background:rgba(168,85,247,0.1);border-radius:8px;"><small style="color:#c4b5fd;"> Связано с финансами: ${related.category} (${related.amount} ${related.currency})</small></div>` : ''}
+        ${related ? `<div style="margin-bottom:16px;padding:10px;background:rgba(168,85,247,0.1);border-radius:8px;"><small style="color:#c4b5fd;">🔗 Связано с финансами: ${related.category} (${related.amount} ${related.currency})</small></div>` : ''}
         <div style="background:rgba(0,0,0,0.2); padding:16px; border-radius:10px; line-height:1.5; white-space:pre-wrap; margin-bottom:20px;">${note.content || 'Без содержания'}</div>
         <div class="modal-actions">
             <button class="btn btn-secondary" onclick="closeModal()">Закрыть</button>
