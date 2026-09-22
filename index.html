@@ -142,7 +142,6 @@ body {
 .tag-ideas { background: rgba(251, 191, 36, 0.15); color: #fde68a; }
 .tag-finance { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
 
-/* Цветные маркеры для календаря */
 .marker-red { background: rgba(239, 68, 68, 0.3); border-left: 3px solid #ef4444; }
 .marker-blue { background: rgba(59, 130, 246, 0.3); border-left: 3px solid #3b82f6; }
 .marker-green { background: rgba(34, 197, 94, 0.3); border-left: 3px solid #22c55e; }
@@ -460,16 +459,26 @@ body {
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 10px 20px;
+    padding: 12px 24px;
     border-radius: 10px;
     font-size: 0.85rem;
     font-weight: 500;
     z-index: 1000;
     animation: popIn 0.2s ease-out;
+    max-width: 90%;
+    text-align: center;
+}
+.notification.error {
+    animation: popIn 0.2s ease-out, shake 0.5s ease-in-out;
 }
 @keyframes popIn {
     from { transform: translate(-50%, -20px); opacity: 0; }
     to { transform: translate(-50%, 0); opacity: 1; }
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(-50%); }
+    25% { transform: translateX(calc(-50% - 10px)); }
+    75% { transform: translateX(calc(-50% + 10px)); }
 }
 
 .sync-status {
@@ -567,7 +576,7 @@ body {
     <div class="db-section" id="section-calendar">
         <div class="glass-card">
             <div class="card-header">
-                <h2>📅 Календарь</h2>
+                <h2> Календарь</h2>
                 <span class="badge">Calendar</span>
             </div>
             <div class="calendar-nav">
@@ -611,7 +620,7 @@ body {
         <span>Финансы</span>
     </button>
     <button class="nav-tab" onclick="switchTab('calendar', this)">
-        <span class="emoji">📅</span>
+        <span class="emoji"></span>
         <span>Календарь</span>
     </button>
     <button class="nav-tab" onclick="switchTab('notes', this)">
@@ -722,7 +731,13 @@ function saveState() {
             });
         });
     } else {
-        localStorage.setItem('lifehub_local', JSON.stringify(state));
+        try {
+            localStorage.setItem('lifehub_local', JSON.stringify(state));
+            console.log("Сохранено в localStorage:", state);
+        } catch (e) {
+            console.error("Ошибка localStorage:", e);
+            showNotification("Ошибка сохранения: " + e.message, "error");
+        }
     }
 }
 
@@ -915,10 +930,17 @@ function renderCalendar() {
         
         let cellContent = `<span>${d}</span>`;
         if (dayEvents.length > 0) {
-            // Показываем цветные маркеры для каждого события
             const markers = dayEvents.slice(0, 3).map((ev, idx) => {
-                const colorClass = EVENT_COLORS[ev.type] || 'marker-blue';
-                return `<div class="event-marker ${colorClass}" style="left: ${20 + idx * 8}px;"></div>`;
+                const colorMap = {
+                    'blue': '#3b82f6',
+                    'red': '#ef4444',
+                    'green': '#22c55e',
+                    'purple': '#a855f7',
+                    'yellow': '#fbbf24',
+                    'orange': '#fb9038'
+                };
+                const color = colorMap[ev.markerColor] || '#3b82f6';
+                return `<div class="event-marker" style="background: ${color}; left: ${20 + idx * 8}px;"></div>`;
             }).join('');
             cellContent += markers;
         }
@@ -964,13 +986,21 @@ function showDayEvents(year, month, day) {
     const content = document.getElementById('modal-content');
     const dateStr = `${day} ${MONTHS[month].toLowerCase()} ${year}`;
     
-    let html = `<h3>📅 ${dateStr}</h3>`;
+    let html = `<h3> ${dateStr}</h3>`;
     html += `<div style="margin-bottom:16px;color:var(--text-secondary);font-size:0.85rem;">Событий: ${events.length}</div>`;
     
     events.forEach(ev => {
         const time = ev.datetime.slice(11, 16);
         const related = ev.relationId ? state.finance.find(f => f.id === ev.relationId) : null;
-        const colorClass = EVENT_COLORS[ev.type] || 'marker-blue';
+        const colorMap = {
+            'blue': 'marker-blue',
+            'red': 'marker-red',
+            'green': 'marker-green',
+            'purple': 'marker-purple',
+            'yellow': 'marker-yellow',
+            'orange': 'marker-orange'
+        };
+        const colorClass = colorMap[ev.markerColor] || 'marker-blue';
         html += `
             <div class="event-popup-item ${colorClass}">
                 <div class="event-popup-title">${ev.title}</div>
@@ -1074,7 +1104,7 @@ function openModal(type, editId = null) {
     } else if (type === 'notes') {
         html += `
             <div class="form-group"><label>Тема</label><input type="text" class="input-field" id="n-title" value="${item ? item.title : ''}"></div>
-            <div class="form-group"><label>Теги (через запятую)</label><input type="text" class="input-field" id="n-tags" value="${item ? item.tags.join(', ') : ''}"><small style="color:var(--text-secondary);font-size:0.65rem;">${TAGS.map(t=>'#'+t).join(', ')}</small></div>
+            <div class="form-group"><label>Теги (через запятую)</label><input type="text" class="input-field" id="n-tags" value="${item && item.tags ? item.tags.join(', ') : ''}"><small style="color:var(--text-secondary);font-size:0.65rem;">${TAGS.map(t=>'#'+t).join(', ')}</small></div>
             <div class="form-group"><label>Содержание</label><textarea class="textarea-field" id="n-content" style="min-height:120px;">${item ? item.content : ''}</textarea></div>
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="n-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
@@ -1101,7 +1131,6 @@ function toggleCurrencyFields() {
 }
 
 function updateMarkerColor() {
-    // Автоматически выбираем цвет в зависимости от типа события
     const type = document.getElementById('c-type').value;
     const colorMap = {
         'Встреча': 'blue',
@@ -1121,6 +1150,8 @@ function saveData(type, editId) {
     
     let data = {};
     try {
+        console.log("Начало сохранения:", type, editId);
+        
         if (type === 'finance') {
             const amount = parseFloat(document.getElementById('f-amount').value) || 0;
             const date = document.getElementById('f-date').value;
@@ -1163,19 +1194,40 @@ function saveData(type, editId) {
                 relationId: document.getElementById('c-relation').value || null
             };
         } else if (type === 'notes') {
-            const title = document.getElementById('n-title').value.trim();
-            if (!title) {
-                showNotification('Введите тему', 'error');
+            const titleEl = document.getElementById('n-title');
+            const tagsEl = document.getElementById('n-tags');
+            const contentEl = document.getElementById('n-content');
+            const relationEl = document.getElementById('n-relation');
+            
+            if (!titleEl || !tagsEl || !contentEl || !relationEl) {
+                showNotification('Ошибка: форма не загружена', 'error');
+                console.error("Элементы формы не найдены");
                 return;
             }
-            const tagsRaw = document.getElementById('n-tags').value;
+            
+            const title = titleEl.value.trim();
+            if (!title) {
+                showNotification('Введите тему заметки', 'error');
+                return;
+            }
+            
+            const tagsRaw = tagsEl.value || '';
+            const tags = tagsRaw.split(',')
+                .map(t => t.trim().replace(/^#/, '').toLowerCase())
+                .filter(t => TAGS.includes(t));
+            
             data = {
                 title: title,
-                tags: tagsRaw.split(',').map(t => t.trim().replace(/^#/, '').toLowerCase()).filter(t => TAGS.includes(t)),
-                content: document.getElementById('n-content').value,
-                relationId: document.getElementById('n-relation').value || null
+                tags: tags,
+                content: contentEl.value || '',
+                relationId: relationEl.value || null
             };
-            if (!editId) data.createdAt = Date.now();
+            
+            if (!editId) {
+                data.createdAt = Date.now();
+            }
+            
+            console.log("Данные заметки:", data);
         }
 
         if (!state[type]) {
@@ -1186,19 +1238,21 @@ function saveData(type, editId) {
             const index = state[type].findIndex(i => i.id === editId);
             if (index !== -1) {
                 state[type][index] = { ...state[type][index], ...data };
+                console.log("Обновлено:", state[type][index]);
             }
         } else {
             data.id = type[0] + Date.now();
             state[type].push(data);
+            console.log("Добавлено:", data);
         }
         
         saveState();
         renderAll();
         closeModal();
-        showNotification(editId ? 'Обновлено' : 'Добавлено', 'success');
+        showNotification(editId ? '✅ Обновлено' : '✅ Добавлено', 'success');
     } catch (error) {
         console.error('Ошибка сохранения:', error);
-        showNotification('Ошибка: ' + error.message, 'error');
+        showNotification('❌ Ошибка: ' + error.message, 'error');
     }
 }
 
@@ -1213,7 +1267,7 @@ function confirmDelete(type, id) {
             state[type] = state[type].filter(i => i.id !== id);
             saveState();
             renderAll();
-            showNotification('Удалено', 'success');
+            showNotification('🗑️ Удалено', 'success');
         }
     }
 }
@@ -1230,7 +1284,7 @@ function viewNote(id) {
         <h3>📝 ${note.title}</h3>
         <div style="margin-bottom:16px;"><small style="color:var(--text-secondary);">Создано: ${date}</small></div>
         <div style="margin-bottom:16px;">${note.tags.map(t => `<span class="tag-multi ${t === 'работа' ? 'tag-work' : t === 'личное' ? 'tag-personal' : t === 'идеи' ? 'tag-ideas' : 'tag-finance'}">#${t}</span>`).join('')}</div>
-        ${related ? `<div style="margin-bottom:16px;padding:10px;background:rgba(168,85,247,0.1);border-radius:8px;"><small style="color:#c4b5fd;"> Связано с финансами: ${related.category} (${related.amount} ${related.currency})</small></div>` : ''}
+        ${related ? `<div style="margin-bottom:16px;padding:10px;background:rgba(168,85,247,0.1);border-radius:8px;"><small style="color:#c4b5fd;">🔗 Связано с финансами: ${related.category} (${related.amount} ${related.currency})</small></div>` : ''}
         <div style="background:rgba(0,0,0,0.2); padding:16px; border-radius:10px; line-height:1.5; white-space:pre-wrap; margin-bottom:20px;">${note.content || 'Без содержания'}</div>
         <div class="modal-actions">
             <button class="btn btn-secondary" onclick="closeModal()">Закрыть</button>
@@ -1244,13 +1298,13 @@ function showNotification(message, type) {
     const existing = document.querySelector('.notification');
     if (existing) existing.remove();
     const el = document.createElement('div');
-    el.className = 'notification';
+    el.className = 'notification' + (type === 'error' ? ' error' : '');
     el.style.background = type === 'success' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)';
     el.style.color = type === 'success' ? '#4ade80' : '#f87171';
     el.style.border = `1px solid ${type === 'success' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`;
     el.textContent = message;
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 2500);
+    setTimeout(() => el.remove(), 3000);
 }
 
 initFirebase();
