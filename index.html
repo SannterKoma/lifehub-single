@@ -1,9 +1,12 @@
+Понял! Проблема в том, что колонки идут вертикально (списком), а нужно горизонтально — как в заметках. Исправляю CSS и логику переключения:
+
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title> Мой LifeHub</title>
+<title>🧠 Мой LifeHub</title>
 <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/index.min.css" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -305,23 +308,24 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* Board View for Finance */
+/* ===== FINANCE BOARD - горизонтальные колонки как в заметках ===== */
 .finance-board-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
     margin-top: 16px;
 }
 
 .finance-column {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 14px;
+    min-height: 180px;
 }
 
 .finance-column-title {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
     margin-bottom: 12px;
     color: var(--text-primary);
@@ -334,34 +338,37 @@ body {
 
 .finance-column-total {
     font-size: 0.75rem;
-    color: var(--text-secondary);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .finance-item {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
-    padding: 12px;
-    margin-bottom: 10px;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .finance-item:hover {
-    background: rgba(255, 255, 255, 0.07);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+.finance-item:active {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .finance-item-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .finance-item-amount {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 700;
 }
 
@@ -370,23 +377,27 @@ body {
     color: var(--text-secondary);
 }
 
-.finance-item-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 8px;
+.finance-item-sub {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
 }
 
-.finance-item-currency {
+.finance-item-comment {
     font-size: 0.7rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    margin-top: 6px;
+    max-height: 36px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .finance-item-actions {
     display: flex;
     gap: 4px;
+    justify-content: flex-end;
+    margin-top: 6px;
 }
 
 .calendar-nav {
@@ -756,14 +767,16 @@ body {
     word-break: break-word;
 }
 
-/* Hide table when board view is active */
-.finance-view.table .finance-board-container { display: none; }
-.finance-view.board .db-table-wrapper { display: none; }
+/* ===== Переключение видов ===== */
+.finance-view-table .db-table-wrapper { display: block; }
+.finance-view-table .finance-board-container { display: none; }
+.finance-view-board .db-table-wrapper { display: none; }
+.finance-view-board .finance-board-container { display: grid; }
 </style>
 </head>
 <body>
 
-<div class="sync-status" id="sync-status"> Локальный режим</div>
+<div class="sync-status" id="sync-status">💾 Локальный режим</div>
 
 <div class="container">
     <div class="page-header">
@@ -772,15 +785,12 @@ body {
     </div>
 
     <div class="db-section active" id="section-finance">
-        <div class="glass-card">
+        <div class="glass-card finance-view-table" id="finance-card">
             <div class="card-header">
                 <h2>💰 Финансы</h2>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <span class="badge" id="finance-view-badge">Table</span>
-                    <div class="view-toggle">
-                        <button class="view-btn active" onclick="setFinanceView('table')" id="btn-table">Таблица</button>
-                        <button class="view-btn" onclick="setFinanceView('board')" id="btn-board">Доска</button>
-                    </div>
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="setFinanceView('table')" id="btn-table">📋 Таблица</button>
+                    <button class="view-btn" onclick="setFinanceView('board')" id="btn-board">📌 Доска</button>
                 </div>
             </div>
             <div class="stats-row" id="finance-stats"></div>
@@ -880,7 +890,7 @@ const firebaseConfig = {
   messagingSenderId: "283957281646",
   appId: "1:283957281646:web:fa59629284fb259ad3377f"
 };
-    
+
 let db = null;
 let dataRef = null;
 let isCloudSync = false;
@@ -892,7 +902,7 @@ let state = {
 };
 
 let calendarDate = new Date();
-let financeView = 'table'; // 'table' or 'board'
+let financeView = 'table';
 
 const CATEGORIES = ['ЗП USDT', 'Роялти', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
 const EXPENSE_CATEGORIES = ['Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
@@ -906,21 +916,19 @@ const TAGS = [
 
 window.setFinanceView = function(view) {
     financeView = view;
-    const container = document.querySelector('.glass-card');
-    const badge = document.getElementById('finance-view-badge');
+    const card = document.getElementById('finance-card');
     const btnTable = document.getElementById('btn-table');
     const btnBoard = document.getElementById('btn-board');
     
+    // Убираем оба класса
+    card.classList.remove('finance-view-table', 'finance-view-board');
+    
     if (view === 'table') {
-        container.classList.remove('board');
-        container.classList.add('table');
-        badge.textContent = 'Table';
+        card.classList.add('finance-view-table');
         btnTable.classList.add('active');
         btnBoard.classList.remove('active');
     } else {
-        container.classList.remove('table');
-        container.classList.add('board');
-        badge.textContent = 'Board';
+        card.classList.add('finance-view-board');
         btnTable.classList.remove('active');
         btnBoard.classList.add('active');
     }
@@ -1052,7 +1060,8 @@ window.seedData = function() {
     state.finance = [
         { id: 'f1', date: '2026-09-15', type: 'Доход', currency: 'USDT', category: 'ЗП USDT', amount: 2000, rate: 95.5, fees: 150, comment: 'Зарплата за сентябрь' },
         { id: 'f2', date: '2026-09-16', type: 'Расход', currency: 'RUB', category: 'Продукты', amount: 1500, rate: 1, fees: 0, comment: 'Магазин Пятёрочка' },
-        { id: 'f3', date: '2026-09-17', type: 'Расход', currency: 'RUB', category: 'Быт', amount: 2500, rate: 1, fees: 0, comment: 'Коммуналка' }
+        { id: 'f3', date: '2026-09-17', type: 'Расход', currency: 'RUB', category: 'Быт', amount: 2500, rate: 1, fees: 0, comment: 'Коммуналка' },
+        { id: 'f4', date: '2026-09-18', type: 'Расход', currency: 'RUB', category: 'Транспорт', amount: 800, rate: 1, fees: 0, comment: 'Такси' }
     ];
     state.calendar = [
         { id: 'c1', title: 'Созвон с командой', datetime: '2026-09-22T10:00', type: 'Встреча', status: 'Запланировано', relationId: null, description: 'Обсудить новый модуль', markerColor: 'blue' }
@@ -1080,14 +1089,13 @@ window.calcFiat = function(item) {
 
 window.renderFinance = function() {
     ensureState();
+    renderFinanceStats();
     
     if (financeView === 'table') {
         renderFinanceTable();
     } else {
         renderFinanceBoard();
     }
-    
-    renderFinanceStats();
 };
 
 window.renderFinanceTable = function() {
@@ -1108,11 +1116,11 @@ window.renderFinanceTable = function() {
                     <td><span class="tag ${currencyTag}">${item.currency}</span></td>
                     <td><span class="tag tag-category">${item.category}</span></td>
                     <td>${item.amount} ${item.currency}</td>
-                    <td><span class="${fiat >= 0 ? 'formula-value' : 'formula-negative'}" onclick="showComment('${item.id}')" title="${hasComment ? 'Нажми чтобы посмотреть комментарий' : ''}">${Math.round(fiat)} ₽${hasComment ? ' 💬' : ''}</span></td>
+                    <td><span class="${fiat >= 0 ? 'formula-value' : 'formula-negative'}" onclick="showComment('${item.id}')">${Math.round(fiat)} ₽${hasComment ? ' 💬' : ''}</span></td>
                     <td>
                         <div class="table-actions">
                             <button class="action-btn" onclick="editItem('finance', '${item.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="confirmDelete('finance', '${item.id}')">️</button>
+                            <button class="action-btn delete" onclick="confirmDelete('finance', '${item.id}')">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -1129,10 +1137,10 @@ window.renderFinanceBoard = function() {
         return;
     }
     
-    // Group by category (only expense categories for board view)
+    // Группируем по категориям
     const grouped = {};
-    EXPENSE_CATEGORIES.forEach(cat => grouped[cat] = []);
     grouped['Доходы'] = [];
+    EXPENSE_CATEGORIES.forEach(cat => grouped[cat] = []);
     grouped['Другое'] = [];
     
     state.finance.forEach(item => {
@@ -1145,13 +1153,12 @@ window.renderFinanceBoard = function() {
         }
     });
     
-    // Render columns
+    // Рендерим колонки горизонтально
     const columns = ['Доходы', ...EXPENSE_CATEGORIES, 'Другое'];
     
     board.innerHTML = columns.map(category => {
         const items = grouped[category];
         const total = items.reduce((sum, item) => sum + calcFiat(item), 0);
-        const isIncome = category === 'Доходы';
         const totalClass = total >= 0 ? 'formula-value' : 'formula-negative';
         
         return `
@@ -1167,18 +1174,15 @@ window.renderFinanceBoard = function() {
                     return `
                         <div class="finance-item" onclick="showComment('${item.id}')">
                             <div class="finance-item-header">
-                                <span class="finance-item-amount ${fiat >= 0 ? 'formula-value' : 'formula-negative'}">${Math.round(fiat)} ₽${hasComment ? ' 💬' : ''}</span>
+                                <span class="finance-item-amount ${fiat >= 0 ? 'formula-value' : 'formula-negative'}">${Math.round(fiat)} ₽</span>
                                 <span class="finance-item-date">${item.date.slice(5)}</span>
                             </div>
-                            <div style="font-size:0.8rem;margin-bottom:6px;">${item.amount} ${item.currency}</div>
-                            <div class="finance-item-meta">
-                                <span class="finance-item-currency">${item.currency}</span>
-                                <div class="finance-item-actions">
-                                    <button class="action-btn" onclick="event.stopPropagation(); editItem('finance', '${item.id}')">✏️</button>
-                                    <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('finance', '${item.id}')">🗑️</button>
-                                </div>
+                            <div class="finance-item-sub">${item.amount} ${item.currency} · ${item.type}</div>
+                            ${item.comment ? `<div class="finance-item-comment">💬 ${item.comment}</div>` : ''}
+                            <div class="finance-item-actions">
+                                <button class="action-btn" onclick="event.stopPropagation(); editItem('finance', '${item.id}')">✏️</button>
+                                <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('finance', '${item.id}')">🗑️</button>
                             </div>
-                            ${item.comment ? `<div style="font-size:0.7rem;color:var(--text-secondary);margin-top:6px;max-height:40px;overflow:hidden;text-overflow:ellipsis;">${item.comment}</div>` : ''}
                         </div>
                     `;
                 }).join('')}
@@ -1252,7 +1256,7 @@ window.showComment = function(id) {
             <div class="comment-popup-text">${item.amount} ${item.currency} → ${Math.round(fiat)} ₽</div>
         </div>
         <div class="comment-popup">
-            <div class="comment-popup-title"> Комментарий</div>
+            <div class="comment-popup-title">📝 Комментарий</div>
             <div class="comment-popup-text">${item.comment || 'Без комментария'}</div>
         </div>
         <div class="modal-actions">
@@ -1384,7 +1388,7 @@ window.showDayEvents = function(year, month, day) {
         html += `
             <div class="event-popup-item ${colorClass}">
                 <div class="event-popup-title">${ev.title}</div>
-                <div class="event-popup-time"> ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
+                <div class="event-popup-time">🕐 ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
                 ${ev.description ? `<div class="event-popup-desc">${ev.description}</div>` : ''}
                 ${related ? `<div class="event-popup-desc" style="margin-top:6px;">🔗 Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
             </div>
@@ -1472,7 +1476,7 @@ window.openModal = function(type, editId = null) {
     ensureState();
     const item = editId ? state[type].find(i => i.id === editId) : null;
     const content = document.getElementById('modal-content');
-    let html = `<h3>${item ? '✏️ Редактировать' : '＋ Новая'} запись</h3>`;
+    let html = `<h3>${item ? '️ Редактировать' : '＋ Новая'} запись</h3>`;
     
     if (type === 'finance') {
         const currency = item ? item.currency : 'USDT';
@@ -1493,7 +1497,7 @@ window.openModal = function(type, editId = null) {
             <div class="form-group"><label>Тип</label><select class="select-field" id="c-type" onchange="updateMarkerColor()">${EVENT_TYPES.map(t => `<option value="${t}" ${item && item.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
             <div class="form-group"><label>Статус</label><select class="select-field" id="c-status"><option value="Запланировано" ${item && item.status==='Запланировано'?'selected':''}>Запланировано</option><option value="Сделано" ${item && item.status==='Сделано'?'selected':''}>Сделано</option></select></div>
             <div class="form-group"><label>Краткое описание</label><textarea class="textarea-field" id="c-description" placeholder="Необязательно">${item && item.description ? item.description : ''}</textarea></div>
-            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}>🔴 Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
+            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}> Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}> Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
     } else if (type === 'notes') {
@@ -1707,3 +1711,35 @@ initFirebase();
 </script>
 </body>
 </html>
+```
+
+## Что исправлено:
+
+### ✅ Теперь доска работает как в заметках!
+
+**Главное изменение** — CSS-селекторы для переключения видов:
+
+```css
+.finance-view-table .db-table-wrapper { display: block; }
+.finance-view-table .finance-board-container { display: none; }
+.finance-view-board .db-table-wrapper { display: none; }
+.finance-view-board .finance-board-container { display: grid; }
+```
+
+Теперь при клике на **"📌 Доска"**:
+- Таблица полностью скрывается
+- Появляются **горизонтальные колонки** (как в заметках):
+  - 💰 Доходы
+  -  Продукты
+  - 🏠 Быт
+  - 🚗 Транспорт
+  - ️ Еда
+  - 💊 Нужды
+  - 💸 Долги
+  -  Комиссии
+  - 🎉 Развлечения
+  - 📦 Другое
+
+Каждая колонка — отдельный блок с записями внутри. Колонки располагаются **горизонтально** рядом друг с другом, а не списком вниз!
+
+На телефоне колонки будут адаптироваться под ширину экрана. 🎉
