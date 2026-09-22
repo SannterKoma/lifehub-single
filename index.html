@@ -244,8 +244,14 @@ body {
 .stat-value.balance.negative { color: #f87171; }
 .stat-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; }
 
-.formula-value { font-weight: 600; color: #4ade80; }
-.formula-negative { color: #f87171; }
+.formula-value { font-weight: 600; color: #4ade80; cursor: pointer; transition: all 0.2s; }
+.formula-negative { color: #f87171; cursor: pointer; transition: all 0.2s; }
+.formula-value:hover, .formula-negative:hover {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin: -4px -8px;
+}
 
 .calendar-nav {
     display: flex;
@@ -435,7 +441,6 @@ body {
 .select-field option { background: #1a1a3e; }
 .textarea-field { resize: vertical; min-height: 100px; }
 
-/* Checkbox tags */
 .tags-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -591,6 +596,26 @@ body {
     color: var(--text-secondary);
     line-height: 1.4;
 }
+
+.comment-popup {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+.comment-popup-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+}
+.comment-popup-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+}
 </style>
 </head>
 <body>
@@ -633,7 +658,7 @@ body {
     <div class="db-section" id="section-calendar">
         <div class="glass-card">
             <div class="card-header">
-                <h2> Календарь</h2>
+                <h2>📅 Календарь</h2>
                 <span class="badge">Calendar</span>
             </div>
             <div class="calendar-nav">
@@ -662,7 +687,7 @@ body {
     <div class="db-section" id="section-notes">
         <div class="glass-card">
             <div class="card-header">
-                <h2> Заметки</h2>
+                <h2>📝 Заметки</h2>
                 <span class="badge">Board</span>
             </div>
             <div class="board-container" id="board-container"></div>
@@ -845,8 +870,8 @@ function loadCloudState() {
 function seedData() {
     ensureState();
     state.finance = [
-        { id: 'f1', date: '2026-09-15', type: 'Доход', currency: 'USDT', category: 'ЗП USDT', amount: 2000, rate: 95.5, fees: 150, comment: 'Зарплата' },
-        { id: 'f2', date: '2026-09-16', type: 'Расход', currency: 'RUB', category: 'Продукты', amount: 1500, rate: 1, fees: 0, comment: 'Магазин' }
+        { id: 'f1', date: '2026-09-15', type: 'Доход', currency: 'USDT', category: 'ЗП USDT', amount: 2000, rate: 95.5, fees: 150, comment: 'Зарплата за сентябрь' },
+        { id: 'f2', date: '2026-09-16', type: 'Расход', currency: 'RUB', category: 'Продукты', amount: 1500, rate: 1, fees: 0, comment: 'Магазин Пятёрочка' }
     ];
     state.calendar = [
         { id: 'c1', title: 'Созвон с командой', datetime: '2026-09-22T10:00', type: 'Встреча', status: 'Запланировано', relationId: null, description: 'Обсудить новый модуль', markerColor: 'blue' }
@@ -906,7 +931,7 @@ function renderFinance() {
                     <td><span class="tag ${currencyTag}">${item.currency}</span></td>
                     <td><span class="tag tag-category">${item.category}</span></td>
                     <td>${item.amount} ${item.currency}</td>
-                    <td><span class="${fiat >= 0 ? 'formula-value' : 'formula-negative'}">${Math.round(fiat)} ₽</span></td>
+                    <td><span class="${fiat >= 0 ? 'formula-value' : 'formula-negative'}" onclick="showComment('${item.id}')">${Math.round(fiat)} ₽ </span></td>
                     <td>
                         <div class="table-actions">
                             <button class="action-btn" onclick="editItem('finance', '${item.id}')">✏️</button>
@@ -936,6 +961,35 @@ function renderFinance() {
             <div class="stat-label">Баланс</div>
         </div>
     `;
+}
+
+function showComment(id) {
+    const item = state.finance.find(f => f.id === id);
+    if (!item) return;
+    
+    const content = document.getElementById('modal-content');
+    const fiat = calcFiat(item);
+    
+    content.innerHTML = `
+        <h3> Детали платежа</h3>
+        <div class="comment-popup">
+            <div class="comment-popup-title">📅 Дата</div>
+            <div class="comment-popup-text">${item.date}</div>
+        </div>
+        <div class="comment-popup">
+            <div class="comment-popup-title">📊 Сумма</div>
+            <div class="comment-popup-text">${item.amount} ${item.currency} → ${Math.round(fiat)} ₽</div>
+        </div>
+        <div class="comment-popup">
+            <div class="comment-popup-title">📝 Комментарий</div>
+            <div class="comment-popup-text">${item.comment || 'Без комментария'}</div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">Закрыть</button>
+            <button class="btn btn-primary" onclick="closeModal(); editItem('finance', '${item.id}')">Редактировать</button>
+        </div>
+    `;
+    document.getElementById('modal-overlay').classList.add('active');
 }
 
 const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
@@ -1041,7 +1095,7 @@ function showDayEvents(year, month, day) {
     const content = document.getElementById('modal-content');
     const dateStr = `${day} ${MONTHS[month].toLowerCase()} ${year}`;
     
-    let html = `<h3>📅 ${dateStr}</h3>`;
+    let html = `<h3> ${dateStr}</h3>`;
     html += `<div style="margin-bottom:16px;color:var(--text-secondary);font-size:0.85rem;">Событий: ${events.length}</div>`;
     
     events.forEach(ev => {
@@ -1061,7 +1115,7 @@ function showDayEvents(year, month, day) {
                 <div class="event-popup-title">${ev.title}</div>
                 <div class="event-popup-time">🕐 ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
                 ${ev.description ? `<div class="event-popup-desc">${ev.description}</div>` : ''}
-                ${related ? `<div class="event-popup-desc" style="margin-top:6px;"> Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
+                ${related ? `<div class="event-popup-desc" style="margin-top:6px;">🔗 Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
             </div>
         `;
     });
@@ -1167,7 +1221,7 @@ function openModal(type, editId = null) {
             <div class="form-group"><label>Тип</label><select class="select-field" id="c-type" onchange="updateMarkerColor()">${EVENT_TYPES.map(t => `<option value="${t}" ${item && item.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
             <div class="form-group"><label>Статус</label><select class="select-field" id="c-status"><option value="Запланировано" ${item && item.status==='Запланировано'?'selected':''}>Запланировано</option><option value="Сделано" ${item && item.status==='Сделано'?'selected':''}>Сделано</option></select></div>
             <div class="form-group"><label>Краткое описание</label><textarea class="textarea-field" id="c-description" placeholder="Необязательно">${item && item.description ? item.description : ''}</textarea></div>
-            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}> Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
+            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}>🔴 Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
     } else if (type === 'notes') {
@@ -1278,7 +1332,6 @@ function saveData(type, editId) {
                 return;
             }
             
-            // Собираем выбранные теги из чекбоксов
             const selectedTags = [];
             TAGS.forEach(tag => {
                 const checkbox = document.getElementById(`tag-${tag.id}`);
@@ -1334,7 +1387,7 @@ function confirmDelete(type, id) {
             state[type] = state[type].filter(i => i.id !== id);
             saveState();
             renderAll();
-            showNotification('🗑️ Удалено', 'success');
+            showNotification('️ Удалено', 'success');
         }
     }
 }
