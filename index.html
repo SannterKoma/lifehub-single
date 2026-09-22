@@ -538,7 +538,7 @@ body {
 </head>
 <body>
 
-<div class="sync-status" id="sync-status">💾 Локальный режим</div>
+<div class="sync-status" id="sync-status"> Локальный режим</div>
 
 <div class="container">
     <div class="page-header">
@@ -576,7 +576,7 @@ body {
     <div class="db-section" id="section-calendar">
         <div class="glass-card">
             <div class="card-header">
-                <h2> Календарь</h2>
+                <h2>📅 Календарь</h2>
                 <span class="badge">Calendar</span>
             </div>
             <div class="calendar-nav">
@@ -620,7 +620,7 @@ body {
         <span>Финансы</span>
     </button>
     <button class="nav-tab" onclick="switchTab('calendar', this)">
-        <span class="emoji"></span>
+        <span class="emoji">📅</span>
         <span>Календарь</span>
     </button>
     <button class="nav-tab" onclick="switchTab('notes', this)">
@@ -659,12 +659,6 @@ let calendarDate = new Date();
 const CATEGORIES = ['ЗП USDT', 'Роялти', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
 const CURRENCIES = ['USDT', 'RUB'];
 const EVENT_TYPES = ['Встреча', 'Командировка', 'Дедлайн', 'Личное'];
-const EVENT_COLORS = {
-    'Встреча': 'marker-blue',
-    'Командировка': 'marker-purple',
-    'Дедлайн': 'marker-red',
-    'Личное': 'marker-green'
-};
 const TAGS = ['работа', 'личное', 'идеи', 'финансы'];
 
 function ensureState() {
@@ -722,6 +716,7 @@ function updateSyncStatus(isOnline) {
 
 function saveState() {
     ensureState();
+    console.log("💾 Сохранение state:", state);
     
     if (isCloudSync && dataRef) {
         import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
@@ -733,9 +728,9 @@ function saveState() {
     } else {
         try {
             localStorage.setItem('lifehub_local', JSON.stringify(state));
-            console.log("Сохранено в localStorage:", state);
+            console.log("✅ Сохранено в localStorage");
         } catch (e) {
-            console.error("Ошибка localStorage:", e);
+            console.error("❌ Ошибка localStorage:", e);
             showNotification("Ошибка сохранения: " + e.message, "error");
         }
     }
@@ -747,6 +742,7 @@ function loadLocalState() {
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
+            console.log(" Загружено из localStorage:", parsed);
             if (parsed && typeof parsed === 'object') {
                 state.finance = Array.isArray(parsed.finance) ? parsed.finance : [];
                 state.calendar = Array.isArray(parsed.calendar) ? parsed.calendar : [];
@@ -759,6 +755,7 @@ function loadLocalState() {
             seedData();
         }
     } else {
+        console.log("🌱 Первый запуск, создаём тестовые данные");
         seedData();
     }
     renderAll();
@@ -769,6 +766,7 @@ function loadCloudState() {
     import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
         fb.onValue(dataRef, (snapshot) => {
             const data = snapshot.val();
+            console.log("📥 Загружено из Firebase:", data);
             if (data && typeof data === 'object') {
                 state.finance = Array.isArray(data.finance) ? data.finance : [];
                 state.calendar = Array.isArray(data.calendar) ? data.calendar : [];
@@ -799,11 +797,13 @@ function seedData() {
     state.notes = [
         { id: 'n1', title: 'Новый модуль для курса', tags: ['работа', 'идеи'], content: 'Добавить раздел про DeFi', createdAt: Date.now(), relationId: null }
     ];
+    console.log("🌱 Созданы тестовые данные:", state);
     saveState();
 }
 
 function renderAll() {
     ensureState();
+    console.log(" renderAll вызван. Заметок:", state.notes.length);
     renderFinance();
     renderCalendar();
     renderNotes();
@@ -986,7 +986,7 @@ function showDayEvents(year, month, day) {
     const content = document.getElementById('modal-content');
     const dateStr = `${day} ${MONTHS[month].toLowerCase()} ${year}`;
     
-    let html = `<h3> ${dateStr}</h3>`;
+    let html = `<h3>📅 ${dateStr}</h3>`;
     html += `<div style="margin-bottom:16px;color:var(--text-secondary);font-size:0.85rem;">Событий: ${events.length}</div>`;
     
     events.forEach(ev => {
@@ -1023,22 +1023,40 @@ function showDayEvents(year, month, day) {
 
 function renderNotes() {
     ensureState();
+    console.log("📝 renderNotes вызван. Заметок в state:", state.notes.length);
     const container = document.getElementById('board-container');
+    
+    if (!container) {
+        console.error(" Не найден элемент board-container");
+        return;
+    }
+    
     if (!state.notes || state.notes.length === 0) {
+        console.log("⚠️ Заметок нет, показываем empty state");
         container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">Нет заметок</div>';
         return;
     }
     
+    console.log("📋 Рендерим заметки:", state.notes);
+    
     const grouped = {};
     TAGS.forEach(t => grouped[t] = []);
     grouped['другое'] = [];
+    
     state.notes.forEach(n => {
-        if (!n.tags || n.tags.length === 0) grouped['другое'].push(n);
-        else n.tags.forEach(t => grouped[t] ? grouped[t].push(n) : grouped['другое'].push(n));
+        if (!n.tags || n.tags.length === 0) {
+            grouped['другое'].push(n);
+        } else {
+            n.tags.forEach(t => {
+                if (grouped[t]) grouped[t].push(n);
+                else grouped['другое'].push(n);
+            });
+        }
     });
     
     container.innerHTML = TAGS.map(tag => {
         const items = grouped[tag];
+        console.log(`  Колонка #${tag}: ${items.length} заметок`);
         return `
             <div class="board-column">
                 <div class="board-column-title"><span>#${tag}</span><span class="board-count">${items.length}</span></div>
@@ -1049,7 +1067,7 @@ function renderNotes() {
                     <div class="board-item" onclick="viewNote('${n.id}')">
                         <div class="board-item-title">${n.title}</div>
                         <div class="board-item-content">${n.content || 'Без содержания'}</div>
-                        ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;">🔗 ${related.category}</div>` : ''}
+                        ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;"> ${related.category}</div>` : ''}
                         <div class="board-item-meta">
                             ${n.tags.map(t => `<span class="tag-multi ${t === 'работа' ? 'tag-work' : t === 'личное' ? 'tag-personal' : t === 'идеи' ? 'tag-ideas' : 'tag-finance'}">#${t}</span>`).join('')}
                         </div>
@@ -1062,6 +1080,8 @@ function renderNotes() {
             </div>
         `;
     }).join('');
+    
+    console.log("✅ Заметки отрендерены");
 }
 
 function switchTab(section, btn) {
@@ -1070,7 +1090,10 @@ function switchTab(section, btn) {
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
     if (section === 'calendar') renderCalendar();
-    if (section === 'notes') renderNotes();
+    if (section === 'notes') {
+        console.log("🔄 Переключены на заметки, вызываем renderNotes");
+        renderNotes();
+    }
 }
 
 function openModal(type, editId = null) {
@@ -1098,14 +1121,14 @@ function openModal(type, editId = null) {
             <div class="form-group"><label>Тип</label><select class="select-field" id="c-type" onchange="updateMarkerColor()">${EVENT_TYPES.map(t => `<option value="${t}" ${item && item.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
             <div class="form-group"><label>Статус</label><select class="select-field" id="c-status"><option value="Запланировано" ${item && item.status==='Запланировано'?'selected':''}>Запланировано</option><option value="Сделано" ${item && item.status==='Сделано'?'selected':''}>Сделано</option></select></div>
             <div class="form-group"><label>Краткое описание</label><textarea class="textarea-field" id="c-description" placeholder="Необязательно">${item && item.description ? item.description : ''}</textarea></div>
-            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}> Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}>🔴 Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
+            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}> Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
     } else if (type === 'notes') {
         html += `
-            <div class="form-group"><label>Тема</label><input type="text" class="input-field" id="n-title" value="${item ? item.title : ''}"></div>
+            <div class="form-group"><label>Тема</label><input type="text" class="input-field" id="n-title" value="${item && item.title ? item.title : ''}"></div>
             <div class="form-group"><label>Теги (через запятую)</label><input type="text" class="input-field" id="n-tags" value="${item && item.tags ? item.tags.join(', ') : ''}"><small style="color:var(--text-secondary);font-size:0.65rem;">${TAGS.map(t=>'#'+t).join(', ')}</small></div>
-            <div class="form-group"><label>Содержание</label><textarea class="textarea-field" id="n-content" style="min-height:120px;">${item ? item.content : ''}</textarea></div>
+            <div class="form-group"><label>Содержание</label><textarea class="textarea-field" id="n-content" style="min-height:120px;">${item && item.content ? item.content : ''}</textarea></div>
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="n-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
     }
@@ -1150,7 +1173,7 @@ function saveData(type, editId) {
     
     let data = {};
     try {
-        console.log("Начало сохранения:", type, editId);
+        console.log("💾 Начало сохранения:", type, "editId:", editId);
         
         if (type === 'finance') {
             const amount = parseFloat(document.getElementById('f-amount').value) || 0;
@@ -1227,7 +1250,7 @@ function saveData(type, editId) {
                 data.createdAt = Date.now();
             }
             
-            console.log("Данные заметки:", data);
+            console.log("📝 Данные заметки:", data);
         }
 
         if (!state[type]) {
@@ -1238,20 +1261,22 @@ function saveData(type, editId) {
             const index = state[type].findIndex(i => i.id === editId);
             if (index !== -1) {
                 state[type][index] = { ...state[type][index], ...data };
-                console.log("Обновлено:", state[type][index]);
+                console.log("✏️ Обновлено:", state[type][index]);
             }
         } else {
             data.id = type[0] + Date.now();
             state[type].push(data);
-            console.log("Добавлено:", data);
+            console.log("➕ Добавлено:", data);
         }
+        
+        console.log("📦 Полный state после изменения:", state);
         
         saveState();
         renderAll();
         closeModal();
         showNotification(editId ? '✅ Обновлено' : '✅ Добавлено', 'success');
     } catch (error) {
-        console.error('Ошибка сохранения:', error);
+        console.error('❌ Ошибка сохранения:', error);
         showNotification('❌ Ошибка: ' + error.message, 'error');
     }
 }
