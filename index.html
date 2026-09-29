@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🧠 Мой LifeHub</title>
+<title>Мой LifeHub</title>
 <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/index.min.css" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -38,6 +38,10 @@ body {
     25% { background-position: 100% 0%; }
     50% { background-position: 100% 100%; }
     75% { background-position: 0% 100%; }
+}
+
+.emoji {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', sans-serif;
 }
 
 .container {
@@ -94,6 +98,13 @@ body {
     font-weight: 600;
 }
 
+.card-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .view-toggle {
     display: flex;
     gap: 8px;
@@ -116,6 +127,23 @@ body {
     border-color: rgba(99, 102, 241, 0.5);
     color: var(--text-primary);
 }
+
+.btn-add-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--indigo), var(--purple));
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.1s;
+}
+.btn-add-top:active { opacity: 0.8; }
 
 .badge {
     font-size: 0.7rem;
@@ -188,26 +216,6 @@ body {
 .marker-purple { background: rgba(168, 85, 247, 0.3); border-left: 3px solid #a855f7; }
 .marker-yellow { background: rgba(251, 191, 36, 0.3); border-left: 3px solid #fbbf24; }
 .marker-orange { background: rgba(251, 144, 56, 0.3); border-left: 3px solid #fb9038; }
-
-.btn-add {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--indigo), var(--purple));
-    color: white;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 16px;
-    transition: opacity 0.1s;
-}
-.btn-add:active { opacity: 0.8; }
 
 .nav-bar {
     position: fixed;
@@ -305,7 +313,80 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* ===== FINANCE BOARD - горизонтальные колонки как в заметках ===== */
+/* ===== FOLDER / ACCORDION ===== */
+.folder-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.folder-header:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.folder-header:active {
+    transform: scale(0.99);
+}
+
+.folder-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.folder-arrow {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+.folder-arrow.open {
+    transform: rotate(90deg);
+}
+
+.folder-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.folder-count {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-left: 6px;
+    font-weight: 400;
+}
+
+.folder-total {
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.folder-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    max-height: 0;
+}
+
+.folder-content.open {
+    max-height: 5000px;
+}
+
+/* Table grouped rows */
+.folder-table-row td {
+    padding: 10px 10px 10px 30px;
+}
+
+/* ===== FINANCE BOARD ===== */
 .finance-board-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -318,24 +399,46 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 14px;
-    min-height: 180px;
+    min-height: 80px;
+}
+
+.finance-column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+    cursor: pointer;
+    user-select: none;
+}
+
+.finance-column-header:hover {
+    opacity: 0.8;
 }
 
 .finance-column-title {
     font-size: 0.8rem;
     font-weight: 600;
-    margin-bottom: 12px;
     color: var(--text-primary);
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding-bottom: 8px;
-    border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+    gap: 6px;
 }
 
 .finance-column-total {
     font-size: 0.75rem;
     font-weight: 600;
+}
+
+.finance-column-items {
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+    max-height: 5000px;
+}
+
+.finance-column-items.collapsed {
+    max-height: 0;
 }
 
 .finance-item {
@@ -446,9 +549,7 @@ body {
     background: rgba(99, 102, 241, 0.15);
 }
 .calendar-cell.today { background: rgba(99, 102, 241, 0.25); font-weight: 600; }
-.calendar-cell.has-event {
-    position: relative;
-}
+.calendar-cell.has-event { position: relative; }
 .calendar-cell .event-marker {
     position: absolute;
     bottom: 3px;
@@ -469,19 +570,36 @@ body {
     border-radius: 12px;
     padding: 12px;
 }
+.board-column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+.board-column-header:hover { opacity: 0.8; }
 .board-column-title {
     font-size: 0.75rem;
     font-weight: 600;
-    margin-bottom: 10px;
     color: var(--text-secondary);
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
 }
 .board-count {
     background: rgba(255, 255, 255, 0.1);
     padding: 2px 6px;
     border-radius: 8px;
     font-size: 0.65rem;
+}
+.board-items {
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+    max-height: 5000px;
+}
+.board-items.collapsed {
+    max-height: 0;
 }
 .board-item {
     background: rgba(255, 255, 255, 0.04);
@@ -512,17 +630,6 @@ body {
 }
 .action-btn:active { transform: scale(0.9); }
 .action-btn.delete:active { background: rgba(239, 68, 68, 0.2); }
-
-.relation-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: rgba(168, 85, 247, 0.1);
-    color: #c4b5fd;
-    font-size: 0.7rem;
-}
 
 .modal-overlay {
     position: fixed;
@@ -656,7 +763,6 @@ body {
 .btn-primary:active { opacity: 0.8; }
 .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border: 1px solid rgba(255, 255, 255, 0.1); }
 .btn-secondary:active { background: rgba(255, 255, 255, 0.1); }
-.btn-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
 
 .empty-state { text-align: center; padding: 30px 20px; color: var(--text-secondary); font-size: 0.85rem; }
 
@@ -674,9 +780,7 @@ body {
     max-width: 90%;
     text-align: center;
 }
-.notification.error {
-    animation: popIn 0.2s ease-out, shake 0.5s ease-in-out;
-}
+.notification.error { animation: popIn 0.2s ease-out, shake 0.5s ease-in-out; }
 @keyframes popIn {
     from { transform: translate(-50%, -20px); opacity: 0; }
     to { transform: translate(-50%, 0); opacity: 1; }
@@ -725,21 +829,9 @@ body {
     padding: 12px;
     margin-bottom: 8px;
 }
-.event-popup-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-.event-popup-time {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
-}
-.event-popup-desc {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    line-height: 1.4;
-}
+.event-popup-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+.event-popup-time { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px; }
+.event-popup-desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; }
 
 .comment-popup {
     background: rgba(255, 255, 255, 0.05);
@@ -764,11 +856,18 @@ body {
     word-break: break-word;
 }
 
-/* ===== Переключение видов ===== */
+/* View switching */
 .finance-view-table .db-table-wrapper { display: block; }
 .finance-view-table .finance-board-container { display: none; }
 .finance-view-board .db-table-wrapper { display: none; }
 .finance-view-board .finance-board-container { display: grid; }
+
+@media (max-width: 768px) {
+    .card-header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
 </style>
 </head>
 <body>
@@ -777,22 +876,24 @@ body {
 
 <div class="container">
     <div class="page-header">
-        <h1>🧠 Мой LifeHub</h1>
+        <h1><span class="emoji">🧠</span> Мой LifeHub</h1>
         <p>Центр управления жизнью</p>
     </div>
 
     <div class="db-section active" id="section-finance">
         <div class="glass-card finance-view-table" id="finance-card">
             <div class="card-header">
-                <h2>💰 Финансы</h2>
-                <div class="view-toggle">
-                    <button class="view-btn active" onclick="setFinanceView('table')" id="btn-table">📋 Таблица</button>
-                    <button class="view-btn" onclick="setFinanceView('board')" id="btn-board">📌 Доска</button>
+                <h2><span class="emoji">💰</span> Финансы</h2>
+                <div class="card-header-actions">
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="setFinanceView('table')" id="btn-table">📋 Таблица</button>
+                        <button class="view-btn" onclick="setFinanceView('board')" id="btn-board">📌 Доска</button>
+                    </div>
+                    <button class="btn-add-top" onclick="openModal('finance')">＋ Добавить</button>
                 </div>
             </div>
             <div class="stats-row" id="finance-stats"></div>
             
-            <!-- Table View -->
             <div class="db-table-wrapper" style="overflow-x: auto;">
                 <table class="db-table">
                     <thead>
@@ -810,18 +911,18 @@ body {
                 </table>
             </div>
             
-            <!-- Board View -->
             <div class="finance-board-container" id="finance-board"></div>
-            
-            <button class="btn-add" onclick="openModal('finance')">＋ Добавить запись</button>
         </div>
     </div>
 
     <div class="db-section" id="section-calendar">
         <div class="glass-card">
             <div class="card-header">
-                <h2>📅 Календарь</h2>
-                <span class="badge">Calendar</span>
+                <h2><span class="emoji">📅</span> Календарь</h2>
+                <div class="card-header-actions">
+                    <span class="badge">Calendar</span>
+                    <button class="btn-add-top" onclick="openModal('calendar')">＋ Добавить</button>
+                </div>
             </div>
             <div class="calendar-nav">
                 <button class="cal-btn" onclick="changeMonth(-1)">‹</button>
@@ -842,18 +943,19 @@ body {
                     <tbody id="calendar-tbody"></tbody>
                 </table>
             </div>
-            <button class="btn-add" onclick="openModal('calendar')">＋ Добавить событие</button>
         </div>
     </div>
 
     <div class="db-section" id="section-notes">
         <div class="glass-card">
             <div class="card-header">
-                <h2>📝 Заметки</h2>
-                <span class="badge">Board</span>
+                <h2><span class="emoji"></span> Заметки</h2>
+                <div class="card-header-actions">
+                    <span class="badge">Board</span>
+                    <button class="btn-add-top" onclick="openModal('notes')">＋ Добавить</button>
+                </div>
             </div>
             <div class="board-container" id="board-container"></div>
-            <button class="btn-add" onclick="openModal('notes')">＋ Добавить заметку</button>
         </div>
     </div>
 </div>
@@ -864,7 +966,7 @@ body {
         <span>Финансы</span>
     </button>
     <button class="nav-tab" onclick="switchTab('calendar', this)">
-        <span class="emoji">📅</span>
+        <span class="emoji"></span>
         <span>Календарь</span>
     </button>
     <button class="nav-tab" onclick="switchTab('notes', this)">
@@ -892,14 +994,15 @@ let db = null;
 let dataRef = null;
 let isCloudSync = false;
 
-let state = { 
-    finance: [], 
-    calendar: [], 
-    notes: [] 
-};
-
+let state = { finance: [], calendar: [], notes: [] };
 let calendarDate = new Date();
 let financeView = 'table';
+
+// Состояние свернутых папок
+let collapsedFolders = {
+    finance: new Set(),   // свернутые категории в финансах
+    notes: new Set()      // свернутые теги в заметках
+};
 
 const CATEGORIES = ['ЗП USDT', 'Роялти', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
 const EXPENSE_CATEGORIES = ['Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
@@ -911,13 +1014,29 @@ const TAGS = [
     { id: 'финансы', label: '💰 Финансы', class: 'finance' }
 ];
 
+// ===== FOLDER TOGGLE =====
+window.toggleFolder = function(type, category) {
+    const set = collapsedFolders[type];
+    if (set.has(category)) {
+        set.delete(category);
+    } else {
+        set.add(category);
+    }
+    // Перерисовываем без потери состояния
+    if (type === 'finance') {
+        if (financeView === 'table') renderFinanceTable();
+        else renderFinanceBoard();
+    } else if (type === 'notes') {
+        renderNotes();
+    }
+};
+
 window.setFinanceView = function(view) {
     financeView = view;
     const card = document.getElementById('finance-card');
     const btnTable = document.getElementById('btn-table');
     const btnBoard = document.getElementById('btn-board');
     
-    // Убираем оба класса
     card.classList.remove('finance-view-table', 'finance-view-board');
     
     if (view === 'table') {
@@ -1095,42 +1214,12 @@ window.renderFinance = function() {
     }
 };
 
+// ===== TABLE WITH FOLDERS =====
 window.renderFinanceTable = function() {
     const tbody = document.getElementById('finance-tbody');
     
     if (!state.finance || state.finance.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Нет записей</td></tr>';
-    } else {
-        tbody.innerHTML = state.finance.map(item => {
-            const fiat = calcFiat(item);
-            const currencyTag = item.currency === 'USDT' ? 'tag-usdt' : 'tag-rub';
-            const hasComment = item.comment && item.comment.trim() !== '';
-            
-            return `
-                <tr>
-                    <td class="text-secondary">${item.date.slice(5)}</td>
-                    <td><span class="tag ${item.type === 'Доход' ? 'tag-income' : 'tag-expense'}">${item.type}</span></td>
-                    <td><span class="tag ${currencyTag}">${item.currency}</span></td>
-                    <td><span class="tag tag-category">${item.category}</span></td>
-                    <td>${item.amount} ${item.currency}</td>
-                    <td><span class="${fiat >= 0 ? 'formula-value' : 'formula-negative'}" onclick="showComment('${item.id}')">${Math.round(fiat)} ₽${hasComment ? ' 💬' : ''}</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="action-btn" onclick="editItem('finance', '${item.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="confirmDelete('finance', '${item.id}')">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-};
-
-window.renderFinanceBoard = function() {
-    const board = document.getElementById('finance-board');
-    
-    if (!state.finance || state.finance.length === 0) {
-        board.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">Нет записей</div>';
         return;
     }
     
@@ -1150,39 +1239,128 @@ window.renderFinanceBoard = function() {
         }
     });
     
-    // Рендерим колонки горизонтально
+    const categoryOrder = ['Доходы', ...EXPENSE_CATEGORIES, 'Другое'];
+    let html = '';
+    
+    categoryOrder.forEach(category => {
+        const items = grouped[category];
+        if (items.length === 0) return;
+        
+        const isCollapsed = collapsedFolders.finance.has(category);
+        const total = items.reduce((sum, item) => sum + calcFiat(item), 0);
+        const totalClass = total >= 0 ? 'formula-value' : 'formula-negative';
+        const arrow = isCollapsed ? '▶' : '▼';
+        
+        // Заголовок папки
+        html += `
+            <tr>
+                <td colspan="7" style="padding: 0; background: transparent;">
+                    <div class="folder-header" onclick="toggleFolder('finance', '${category}')">
+                        <div class="folder-header-left">
+                            <span class="folder-arrow ${isCollapsed ? '' : 'open'}">${arrow}</span>
+                            <span class="folder-name">${category}</span>
+                            <span class="folder-count">(${items.length})</span>
+                        </div>
+                        <span class="folder-total ${totalClass}">${Math.round(total)} ₽</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+        
+        // Содержимое папки
+        if (!isCollapsed) {
+            items.forEach(item => {
+                const fiat = calcFiat(item);
+                const currencyTag = item.currency === 'USDT' ? 'tag-usdt' : 'tag-rub';
+                const hasComment = item.comment && item.comment.trim() !== '';
+                
+                html += `
+                    <tr class="folder-table-row">
+                        <td class="text-secondary">${item.date.slice(5)}</td>
+                        <td><span class="tag ${item.type === 'Доход' ? 'tag-income' : 'tag-expense'}">${item.type}</span></td>
+                        <td><span class="tag ${currencyTag}">${item.currency}</span></td>
+                        <td><span class="tag tag-category">${item.category}</span></td>
+                        <td>${item.amount} ${item.currency}</td>
+                        <td><span class="${fiat >= 0 ? 'formula-value' : 'formula-negative'}" onclick="showComment('${item.id}')">${Math.round(fiat)} ₽${hasComment ? ' 💬' : ''}</span></td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="action-btn" onclick="editItem('finance', '${item.id}')">✏️</button>
+                                <button class="action-btn delete" onclick="confirmDelete('finance', '${item.id}')">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    });
+    
+    tbody.innerHTML = html;
+};
+
+// ===== BOARD WITH COLLAPSIBLE COLUMNS =====
+window.renderFinanceBoard = function() {
+    const board = document.getElementById('finance-board');
+    
+    if (!state.finance || state.finance.length === 0) {
+        board.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">Нет записей</div>';
+        return;
+    }
+    
+    const grouped = {};
+    grouped['Доходы'] = [];
+    EXPENSE_CATEGORIES.forEach(cat => grouped[cat] = []);
+    grouped['Другое'] = [];
+    
+    state.finance.forEach(item => {
+        if (item.type === 'Доход') {
+            grouped['Доходы'].push(item);
+        } else if (grouped[item.category]) {
+            grouped[item.category].push(item);
+        } else {
+            grouped['Другое'].push(item);
+        }
+    });
+    
     const columns = ['Доходы', ...EXPENSE_CATEGORIES, 'Другое'];
     
     board.innerHTML = columns.map(category => {
         const items = grouped[category];
+        if (items.length === 0) return '';
+        
         const total = items.reduce((sum, item) => sum + calcFiat(item), 0);
         const totalClass = total >= 0 ? 'formula-value' : 'formula-negative';
+        const isCollapsed = collapsedFolders.finance.has(category);
+        const arrow = isCollapsed ? '▶' : '▼';
         
         return `
             <div class="finance-column">
-                <div class="finance-column-title">
-                    <span>${category}</span>
+                <div class="finance-column-header" onclick="toggleFolder('finance', '${category}')">
+                    <div class="finance-column-title">
+                        <span class="folder-arrow ${isCollapsed ? '' : 'open'}">${arrow}</span>
+                        <span>${category}</span>
+                    </div>
                     <span class="finance-column-total ${totalClass}">${Math.round(total)} ₽</span>
                 </div>
-                ${items.length === 0 ? '<div style="font-size:0.75rem;color:var(--text-secondary);text-align:center;padding:20px 0;">Пусто</div>' : 
-                items.map(item => {
-                    const fiat = calcFiat(item);
-                    const hasComment = item.comment && item.comment.trim() !== '';
-                    return `
-                        <div class="finance-item" onclick="showComment('${item.id}')">
-                            <div class="finance-item-header">
-                                <span class="finance-item-amount ${fiat >= 0 ? 'formula-value' : 'formula-negative'}">${Math.round(fiat)} ₽</span>
-                                <span class="finance-item-date">${item.date.slice(5)}</span>
+                <div class="finance-column-items ${isCollapsed ? 'collapsed' : ''}">
+                    ${items.map(item => {
+                        const fiat = calcFiat(item);
+                        const hasComment = item.comment && item.comment.trim() !== '';
+                        return `
+                            <div class="finance-item" onclick="showComment('${item.id}')">
+                                <div class="finance-item-header">
+                                    <span class="finance-item-amount ${fiat >= 0 ? 'formula-value' : 'formula-negative'}">${Math.round(fiat)} ₽</span>
+                                    <span class="finance-item-date">${item.date.slice(5)}</span>
+                                </div>
+                                <div class="finance-item-sub">${item.amount} ${item.currency} · ${item.type}</div>
+                                ${item.comment ? `<div class="finance-item-comment">💬 ${item.comment}</div>` : ''}
+                                <div class="finance-item-actions">
+                                    <button class="action-btn" onclick="event.stopPropagation(); editItem('finance', '${item.id}')">✏️</button>
+                                    <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('finance', '${item.id}')">🗑️</button>
+                                </div>
                             </div>
-                            <div class="finance-item-sub">${item.amount} ${item.currency} · ${item.type}</div>
-                            ${item.comment ? `<div class="finance-item-comment">💬 ${item.comment}</div>` : ''}
-                            <div class="finance-item-actions">
-                                <button class="action-btn" onclick="event.stopPropagation(); editItem('finance', '${item.id}')">✏️</button>
-                                <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('finance', '${item.id}')">🗑️</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
+                        `;
+                    }).join('')}
+                </div>
             </div>
         `;
     }).join('');
@@ -1245,7 +1423,7 @@ window.showComment = function(id) {
             <div class="comment-popup-text">${item.date}</div>
         </div>
         <div class="comment-popup">
-            <div class="comment-popup-title"> Категория</div>
+            <div class="comment-popup-title">📊 Категория</div>
             <div class="comment-popup-text">${item.category}</div>
         </div>
         <div class="comment-popup">
@@ -1341,7 +1519,7 @@ window.renderCalendar = function() {
             const related = ev.relationId ? state.finance.find(f => f.id === ev.relationId) : null;
             return `
                 <tr>
-                    <td>${ev.title}<br><small class="text-secondary">${related ? ' ' + related.category : ''}</small></td>
+                    <td>${ev.title}<br><small class="text-secondary">${related ? '🔗 ' + related.category : ''}</small></td>
                     <td class="text-secondary">${ev.datetime.slice(5, 16).replace('T', ' ')}</td>
                     <td><span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}">${ev.status}</span></td>
                     <td>
@@ -1367,7 +1545,7 @@ window.showDayEvents = function(year, month, day) {
     const content = document.getElementById('modal-content');
     const dateStr = `${day} ${MONTHS[month].toLowerCase()} ${year}`;
     
-    let html = `<h3>📅 ${dateStr}</h3>`;
+    let html = `<h3> ${dateStr}</h3>`;
     html += `<div style="margin-bottom:16px;color:var(--text-secondary);font-size:0.85rem;">Событий: ${events.length}</div>`;
     
     events.forEach(ev => {
@@ -1385,7 +1563,7 @@ window.showDayEvents = function(year, month, day) {
         html += `
             <div class="event-popup-item ${colorClass}">
                 <div class="event-popup-title">${ev.title}</div>
-                <div class="event-popup-time">🕐 ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
+                <div class="event-popup-time"> ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
                 ${ev.description ? `<div class="event-popup-desc">${ev.description}</div>` : ''}
                 ${related ? `<div class="event-popup-desc" style="margin-top:6px;">🔗 Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
             </div>
@@ -1402,6 +1580,7 @@ window.showDayEvents = function(year, month, day) {
     document.getElementById('modal-overlay').classList.add('active');
 };
 
+// ===== NOTES WITH COLLAPSIBLE COLUMNS =====
 window.renderNotes = function() {
     ensureState();
     const container = document.getElementById('board-container');
@@ -1430,30 +1609,40 @@ window.renderNotes = function() {
     
     container.innerHTML = TAGS.map(tag => {
         const items = grouped[tag.id];
+        const isCollapsed = collapsedFolders.notes.has(tag.id);
+        const arrow = isCollapsed ? '▶' : '▼';
+        
         return `
             <div class="board-column">
-                <div class="board-column-title"><span>${tag.label}</span><span class="board-count">${items.length}</span></div>
-                ${items.length === 0 ? '<div style="font-size:0.7rem;color:var(--text-secondary);text-align:center;padding:10px;">Пусто</div>' : 
-                items.map(n => {
-                    const related = n.relationId ? state.finance.find(f => f.id === n.relationId) : null;
-                    return `
-                    <div class="board-item" onclick="viewNote('${n.id}')">
-                        <div class="board-item-title">${n.title}</div>
-                        <div class="board-item-content">${n.content || 'Без содержания'}</div>
-                        ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;"> ${related.category}</div>` : ''}
-                        <div class="board-item-meta">
-                            ${n.tags.map(t => {
-                                const tagInfo = TAGS.find(tt => tt.id === t);
-                                const cls = tagInfo ? tagInfo.class : '';
-                                return `<span class="tag-multi tag-${cls}">#${t}</span>`;
-                            }).join('')}
-                        </div>
-                        <div class="table-actions" style="margin-top:8px; justify-content:flex-end;">
-                            <button class="action-btn" onclick="event.stopPropagation(); editItem('notes', '${n.id}')">✏️</button>
-                            <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('notes', '${n.id}')">🗑️</button>
-                        </div>
+                <div class="board-column-header" onclick="toggleFolder('notes', '${tag.id}')">
+                    <div class="board-column-title">
+                        <span class="folder-arrow ${isCollapsed ? '' : 'open'}">${arrow}</span>
+                        <span>${tag.label}</span>
                     </div>
-                `}).join('')}
+                    <span class="board-count">${items.length}</span>
+                </div>
+                <div class="board-items ${isCollapsed ? 'collapsed' : ''}">
+                    ${items.map(n => {
+                        const related = n.relationId ? state.finance.find(f => f.id === n.relationId) : null;
+                        return `
+                        <div class="board-item" onclick="viewNote('${n.id}')">
+                            <div class="board-item-title">${n.title}</div>
+                            <div class="board-item-content">${n.content || 'Без содержания'}</div>
+                            ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;">🔗 ${related.category}</div>` : ''}
+                            <div class="board-item-meta">
+                                ${n.tags.map(t => {
+                                    const tagInfo = TAGS.find(tt => tt.id === t);
+                                    const cls = tagInfo ? tagInfo.class : '';
+                                    return `<span class="tag-multi tag-${cls}">#${t}</span>`;
+                                }).join('')}
+                            </div>
+                            <div class="table-actions" style="margin-top:8px; justify-content:flex-end;">
+                                <button class="action-btn" onclick="event.stopPropagation(); editItem('notes', '${n.id}')">✏️</button>
+                                <button class="action-btn delete" onclick="event.stopPropagation(); confirmDelete('notes', '${n.id}')">🗑️</button>
+                            </div>
+                        </div>
+                    `}).join('')}
+                </div>
             </div>
         `;
     }).join('');
@@ -1473,7 +1662,7 @@ window.openModal = function(type, editId = null) {
     ensureState();
     const item = editId ? state[type].find(i => i.id === editId) : null;
     const content = document.getElementById('modal-content');
-    let html = `<h3>${item ? '️ Редактировать' : '＋ Новая'} запись</h3>`;
+    let html = `<h3>${item ? '✏️ Редактировать' : '＋ Новая'} запись</h3>`;
     
     if (type === 'finance') {
         const currency = item ? item.currency : 'USDT';
@@ -1494,7 +1683,7 @@ window.openModal = function(type, editId = null) {
             <div class="form-group"><label>Тип</label><select class="select-field" id="c-type" onchange="updateMarkerColor()">${EVENT_TYPES.map(t => `<option value="${t}" ${item && item.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
             <div class="form-group"><label>Статус</label><select class="select-field" id="c-status"><option value="Запланировано" ${item && item.status==='Запланировано'?'selected':''}>Запланировано</option><option value="Сделано" ${item && item.status==='Сделано'?'selected':''}>Сделано</option></select></div>
             <div class="form-group"><label>Краткое описание</label><textarea class="textarea-field" id="c-description" placeholder="Необязательно">${item && item.description ? item.description : ''}</textarea></div>
-            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}> Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}> Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
+            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}>🔴 Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}> Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
     } else if (type === 'notes') {
