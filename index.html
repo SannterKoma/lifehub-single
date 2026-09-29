@@ -128,6 +128,29 @@ body {
     color: var(--text-primary);
 }
 
+.period-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.period-btn {
+    padding: 6px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.period-btn.active {
+    background: rgba(34, 197, 94, 0.3);
+    border-color: rgba(34, 197, 94, 0.5);
+    color: #4ade80;
+}
+
 .btn-add-top {
     display: inline-flex;
     align-items: center;
@@ -863,6 +886,10 @@ body {
                         <button class="view-btn active" onclick="setFinanceView('table')" id="btn-table">📋 Таблица</button>
                         <button class="view-btn" onclick="setFinanceView('board')" id="btn-board">📌 Доска</button>
                     </div>
+                    <div class="period-toggle">
+                        <button class="period-btn active" onclick="setFinancePeriod('month')" id="btn-month">📅 Месяц</button>
+                        <button class="period-btn" onclick="setFinancePeriod('all')" id="btn-all">📊 Всё</button>
+                    </div>
                     <button class="btn-add-top" onclick="openModal('finance')">＋ Добавить</button>
                 </div>
             </div>
@@ -892,7 +919,7 @@ body {
     <div class="db-section" id="section-calendar">
         <div class="glass-card">
             <div class="card-header">
-                <h2><span class="emoji"></span> Календарь</h2>
+                <h2><span class="emoji">📅</span> Календарь</h2>
                 <div class="card-header-actions">
                     <span class="badge">Calendar</span>
                     <button class="btn-add-top" onclick="openModal('calendar')">＋ Добавить</button>
@@ -923,7 +950,7 @@ body {
     <div class="db-section" id="section-notes">
         <div class="glass-card">
             <div class="card-header">
-                <h2><span class="emoji">📝</span> Заметки</h2>
+                <h2><span class="emoji"></span> Заметки</h2>
                 <div class="card-header-actions">
                     <span class="badge">Board</span>
                     <button class="btn-add-top" onclick="openModal('notes')">＋ Добавить</button>
@@ -940,7 +967,7 @@ body {
         <span>Финансы</span>
     </button>
     <button class="nav-tab" onclick="switchTab('calendar', this)">
-        <span class="emoji">📅</span>
+        <span class="emoji"></span>
         <span>Календарь</span>
     </button>
     <button class="nav-tab" onclick="switchTab('notes', this)">
@@ -971,8 +998,8 @@ let isCloudSync = false;
 let state = { finance: [], calendar: [], notes: [] };
 let calendarDate = new Date();
 let financeView = 'table';
+let financePeriod = 'month'; // 'month' или 'all'
 
-// ВСЕ ПАПКИ СВЁРНУТЫ ПО УМОЛЧАНИЮ
 let collapsedFolders = {
     finance: new Set(['Доходы', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения', 'Другое']),
     notes: new Set(['работа', 'личное', 'идеи', 'финансы', 'другое'])
@@ -987,6 +1014,22 @@ const TAGS = [
     { id: 'идеи', label: '💡 Идеи', class: 'ideas' },
     { id: 'финансы', label: '💰 Финансы', class: 'finance' }
 ];
+
+window.setFinancePeriod = function(period) {
+    financePeriod = period;
+    const btnMonth = document.getElementById('btn-month');
+    const btnAll = document.getElementById('btn-all');
+    
+    if (period === 'month') {
+        btnMonth.classList.add('active');
+        btnAll.classList.remove('active');
+    } else {
+        btnMonth.classList.remove('active');
+        btnAll.classList.add('active');
+    }
+    
+    renderFinance();
+};
 
 window.toggleFolder = function(type, category) {
     const set = collapsedFolders[type];
@@ -1175,6 +1218,21 @@ window.calcFiat = function(item) {
     }
 };
 
+// Фильтрация по периоду
+window.getFilteredFinance = function() {
+    if (financePeriod === 'month') {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        
+        return state.finance.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate.getMonth() === currentMonth && itemDate.getFullYear() === currentYear;
+        });
+    }
+    return state.finance;
+};
+
 window.renderFinance = function() {
     ensureState();
     renderFinanceStats();
@@ -1188,8 +1246,9 @@ window.renderFinance = function() {
 
 window.renderFinanceTable = function() {
     const tbody = document.getElementById('finance-tbody');
+    const filteredFinance = getFilteredFinance();
     
-    if (!state.finance || state.finance.length === 0) {
+    if (!filteredFinance || filteredFinance.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Нет записей</td></tr>';
         return;
     }
@@ -1199,7 +1258,7 @@ window.renderFinanceTable = function() {
     EXPENSE_CATEGORIES.forEach(cat => grouped[cat] = []);
     grouped['Другое'] = [];
     
-    state.finance.forEach(item => {
+    filteredFinance.forEach(item => {
         if (item.type === 'Доход') {
             grouped['Доходы'].push(item);
         } else if (grouped[item.category]) {
@@ -1267,8 +1326,9 @@ window.renderFinanceTable = function() {
 
 window.renderFinanceBoard = function() {
     const board = document.getElementById('finance-board');
+    const filteredFinance = getFilteredFinance();
     
-    if (!state.finance || state.finance.length === 0) {
+    if (!filteredFinance || filteredFinance.length === 0) {
         board.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">Нет записей</div>';
         return;
     }
@@ -1278,7 +1338,7 @@ window.renderFinanceBoard = function() {
     EXPENSE_CATEGORIES.forEach(cat => grouped[cat] = []);
     grouped['Другое'] = [];
     
-    state.finance.forEach(item => {
+    filteredFinance.forEach(item => {
         if (item.type === 'Доход') {
             grouped['Доходы'].push(item);
         } else if (grouped[item.category]) {
@@ -1335,12 +1395,14 @@ window.renderFinanceBoard = function() {
 
 window.renderFinanceStats = function() {
     const stats = document.getElementById('finance-stats');
+    const filteredFinance = getFilteredFinance();
+    
     let totalIncomeUSDT = 0, totalExpenseUSDT = 0;
     let totalIncomeRUB = 0, totalExpenseRUB = 0;
     let totalIncomeFiat = 0, totalExpenseFiat = 0;
     
-    if (state.finance) {
-        state.finance.forEach(item => {
+    if (filteredFinance) {
+        filteredFinance.forEach(item => {
             const fiat = calcFiat(item);
             
             if (item.currency === 'USDT') {
@@ -1390,7 +1452,7 @@ window.showComment = function(id) {
             <div class="comment-popup-text">${item.date}</div>
         </div>
         <div class="comment-popup">
-            <div class="comment-popup-title"> Категория</div>
+            <div class="comment-popup-title">📊 Категория</div>
             <div class="comment-popup-text">${item.category}</div>
         </div>
         <div class="comment-popup">
@@ -1486,7 +1548,7 @@ window.renderCalendar = function() {
             const related = ev.relationId ? state.finance.find(f => f.id === ev.relationId) : null;
             return `
                 <tr>
-                    <td>${ev.title}<br><small class="text-secondary">${related ? ' ' + related.category : ''}</small></td>
+                    <td>${ev.title}<br><small class="text-secondary">${related ? '🔗 ' + related.category : ''}</small></td>
                     <td class="text-secondary">${ev.datetime.slice(5, 16).replace('T', ' ')}</td>
                     <td><span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}">${ev.status}</span></td>
                     <td>
@@ -1512,7 +1574,7 @@ window.showDayEvents = function(year, month, day) {
     const content = document.getElementById('modal-content');
     const dateStr = `${day} ${MONTHS[month].toLowerCase()} ${year}`;
     
-    let html = `<h3>📅 ${dateStr}</h3>`;
+    let html = `<h3> ${dateStr}</h3>`;
     html += `<div style="margin-bottom:16px;color:var(--text-secondary);font-size:0.85rem;">Событий: ${events.length}</div>`;
     
     events.forEach(ev => {
@@ -1532,7 +1594,7 @@ window.showDayEvents = function(year, month, day) {
                 <div class="event-popup-title">${ev.title}</div>
                 <div class="event-popup-time">🕐 ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
                 ${ev.description ? `<div class="event-popup-desc">${ev.description}</div>` : ''}
-                ${related ? `<div class="event-popup-desc" style="margin-top:6px;"> Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
+                ${related ? `<div class="event-popup-desc" style="margin-top:6px;">🔗 Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
             </div>
         `;
     });
@@ -1594,7 +1656,7 @@ window.renderNotes = function() {
                         <div class="board-item" onclick="viewNote('${n.id}')">
                             <div class="board-item-title">${n.title}</div>
                             <div class="board-item-content">${n.content || 'Без содержания'}</div>
-                            ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;"> ${related.category}</div>` : ''}
+                            ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;">🔗 ${related.category}</div>` : ''}
                             <div class="board-item-meta">
                                 ${n.tags.map(t => {
                                     const tagInfo = TAGS.find(tt => tt.id === t);
@@ -1800,7 +1862,7 @@ window.saveData = function(type, editId) {
         showNotification(editId ? '✅ Обновлено' : '✅ Добавлено', 'success');
     } catch (error) {
         console.error('Ошибка сохранения:', error);
-        showNotification('❌ Ошибка: ' + error.message, 'error');
+        showNotification(' Ошибка: ' + error.message, 'error');
     }
 };
 
