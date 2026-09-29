@@ -313,7 +313,6 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* ===== FOLDER / ACCORDION ===== */
 .folder-header {
     display: flex;
     align-items: center;
@@ -371,22 +370,6 @@ body {
     font-weight: 700;
 }
 
-.folder-content {
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-    max-height: 0;
-}
-
-.folder-content.open {
-    max-height: 5000px;
-}
-
-/* Table grouped rows */
-.folder-table-row td {
-    padding: 10px 10px 10px 30px;
-}
-
-/* ===== FINANCE BOARD ===== */
 .finance-board-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -542,12 +525,8 @@ body {
     cursor: default;
     padding: 2px;
 }
-.calendar-cell.clickable {
-    cursor: pointer;
-}
-.calendar-cell.clickable:hover {
-    background: rgba(99, 102, 241, 0.15);
-}
+.calendar-cell.clickable { cursor: pointer; }
+.calendar-cell.clickable:hover { background: rgba(99, 102, 241, 0.15); }
 .calendar-cell.today { background: rgba(99, 102, 241, 0.25); font-weight: 600; }
 .calendar-cell.has-event { position: relative; }
 .calendar-cell .event-marker {
@@ -598,9 +577,7 @@ body {
     overflow: hidden;
     max-height: 5000px;
 }
-.board-items.collapsed {
-    max-height: 0;
-}
+.board-items.collapsed { max-height: 0; }
 .board-item {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -679,9 +656,7 @@ body {
     font-size: 0.9rem;
     outline: none;
 }
-.input-field:focus, .select-field:focus, .textarea-field:focus {
-    border-color: var(--indigo);
-}
+.input-field:focus, .select-field:focus, .textarea-field:focus { border-color: var(--indigo); }
 .select-field {
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a5b4fc' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -856,7 +831,6 @@ body {
     word-break: break-word;
 }
 
-/* View switching */
 .finance-view-table .db-table-wrapper { display: block; }
 .finance-view-table .finance-board-container { display: none; }
 .finance-view-board .db-table-wrapper { display: none; }
@@ -918,7 +892,7 @@ body {
     <div class="db-section" id="section-calendar">
         <div class="glass-card">
             <div class="card-header">
-                <h2><span class="emoji">📅</span> Календарь</h2>
+                <h2><span class="emoji"></span> Календарь</h2>
                 <div class="card-header-actions">
                     <span class="badge">Calendar</span>
                     <button class="btn-add-top" onclick="openModal('calendar')">＋ Добавить</button>
@@ -949,7 +923,7 @@ body {
     <div class="db-section" id="section-notes">
         <div class="glass-card">
             <div class="card-header">
-                <h2><span class="emoji"></span> Заметки</h2>
+                <h2><span class="emoji">📝</span> Заметки</h2>
                 <div class="card-header-actions">
                     <span class="badge">Board</span>
                     <button class="btn-add-top" onclick="openModal('notes')">＋ Добавить</button>
@@ -966,7 +940,7 @@ body {
         <span>Финансы</span>
     </button>
     <button class="nav-tab" onclick="switchTab('calendar', this)">
-        <span class="emoji"></span>
+        <span class="emoji">📅</span>
         <span>Календарь</span>
     </button>
     <button class="nav-tab" onclick="switchTab('notes', this)">
@@ -998,10 +972,10 @@ let state = { finance: [], calendar: [], notes: [] };
 let calendarDate = new Date();
 let financeView = 'table';
 
-// Состояние свернутых папок
+// ВСЕ ПАПКИ СВЁРНУТЫ ПО УМОЛЧАНИЮ
 let collapsedFolders = {
-    finance: new Set(),   // свернутые категории в финансах
-    notes: new Set()      // свернутые теги в заметках
+    finance: new Set(['Доходы', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения', 'Другое']),
+    notes: new Set(['работа', 'личное', 'идеи', 'финансы', 'другое'])
 };
 
 const CATEGORIES = ['ЗП USDT', 'Роялти', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения'];
@@ -1014,7 +988,6 @@ const TAGS = [
     { id: 'финансы', label: '💰 Финансы', class: 'finance' }
 ];
 
-// ===== FOLDER TOGGLE =====
 window.toggleFolder = function(type, category) {
     const set = collapsedFolders[type];
     if (set.has(category)) {
@@ -1022,7 +995,6 @@ window.toggleFolder = function(type, category) {
     } else {
         set.add(category);
     }
-    // Перерисовываем без потери состояния
     if (type === 'finance') {
         if (financeView === 'table') renderFinanceTable();
         else renderFinanceBoard();
@@ -1214,7 +1186,6 @@ window.renderFinance = function() {
     }
 };
 
-// ===== TABLE WITH FOLDERS =====
 window.renderFinanceTable = function() {
     const tbody = document.getElementById('finance-tbody');
     
@@ -1223,7 +1194,6 @@ window.renderFinanceTable = function() {
         return;
     }
     
-    // Группируем по категориям
     const grouped = {};
     grouped['Доходы'] = [];
     EXPENSE_CATEGORIES.forEach(cat => grouped[cat] = []);
@@ -1251,7 +1221,6 @@ window.renderFinanceTable = function() {
         const totalClass = total >= 0 ? 'formula-value' : 'formula-negative';
         const arrow = isCollapsed ? '▶' : '▼';
         
-        // Заголовок папки
         html += `
             <tr>
                 <td colspan="7" style="padding: 0; background: transparent;">
@@ -1267,7 +1236,6 @@ window.renderFinanceTable = function() {
             </tr>
         `;
         
-        // Содержимое папки
         if (!isCollapsed) {
             items.forEach(item => {
                 const fiat = calcFiat(item);
@@ -1275,7 +1243,7 @@ window.renderFinanceTable = function() {
                 const hasComment = item.comment && item.comment.trim() !== '';
                 
                 html += `
-                    <tr class="folder-table-row">
+                    <tr>
                         <td class="text-secondary">${item.date.slice(5)}</td>
                         <td><span class="tag ${item.type === 'Доход' ? 'tag-income' : 'tag-expense'}">${item.type}</span></td>
                         <td><span class="tag ${currencyTag}">${item.currency}</span></td>
@@ -1297,7 +1265,6 @@ window.renderFinanceTable = function() {
     tbody.innerHTML = html;
 };
 
-// ===== BOARD WITH COLLAPSIBLE COLUMNS =====
 window.renderFinanceBoard = function() {
     const board = document.getElementById('finance-board');
     
@@ -1423,7 +1390,7 @@ window.showComment = function(id) {
             <div class="comment-popup-text">${item.date}</div>
         </div>
         <div class="comment-popup">
-            <div class="comment-popup-title">📊 Категория</div>
+            <div class="comment-popup-title"> Категория</div>
             <div class="comment-popup-text">${item.category}</div>
         </div>
         <div class="comment-popup">
@@ -1519,7 +1486,7 @@ window.renderCalendar = function() {
             const related = ev.relationId ? state.finance.find(f => f.id === ev.relationId) : null;
             return `
                 <tr>
-                    <td>${ev.title}<br><small class="text-secondary">${related ? '🔗 ' + related.category : ''}</small></td>
+                    <td>${ev.title}<br><small class="text-secondary">${related ? ' ' + related.category : ''}</small></td>
                     <td class="text-secondary">${ev.datetime.slice(5, 16).replace('T', ' ')}</td>
                     <td><span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}">${ev.status}</span></td>
                     <td>
@@ -1545,7 +1512,7 @@ window.showDayEvents = function(year, month, day) {
     const content = document.getElementById('modal-content');
     const dateStr = `${day} ${MONTHS[month].toLowerCase()} ${year}`;
     
-    let html = `<h3> ${dateStr}</h3>`;
+    let html = `<h3>📅 ${dateStr}</h3>`;
     html += `<div style="margin-bottom:16px;color:var(--text-secondary);font-size:0.85rem;">Событий: ${events.length}</div>`;
     
     events.forEach(ev => {
@@ -1563,9 +1530,9 @@ window.showDayEvents = function(year, month, day) {
         html += `
             <div class="event-popup-item ${colorClass}">
                 <div class="event-popup-title">${ev.title}</div>
-                <div class="event-popup-time"> ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
+                <div class="event-popup-time">🕐 ${time} · <span class="tag tag-type" style="font-size:0.65rem;">${ev.type}</span> · <span class="tag ${ev.status === 'Сделано' ? 'tag-done' : 'tag-status'}" style="font-size:0.65rem;">${ev.status}</span></div>
                 ${ev.description ? `<div class="event-popup-desc">${ev.description}</div>` : ''}
-                ${related ? `<div class="event-popup-desc" style="margin-top:6px;">🔗 Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
+                ${related ? `<div class="event-popup-desc" style="margin-top:6px;"> Связано: ${related.category} (${related.amount} ${related.currency})</div>` : ''}
             </div>
         `;
     });
@@ -1580,7 +1547,6 @@ window.showDayEvents = function(year, month, day) {
     document.getElementById('modal-overlay').classList.add('active');
 };
 
-// ===== NOTES WITH COLLAPSIBLE COLUMNS =====
 window.renderNotes = function() {
     ensureState();
     const container = document.getElementById('board-container');
@@ -1628,7 +1594,7 @@ window.renderNotes = function() {
                         <div class="board-item" onclick="viewNote('${n.id}')">
                             <div class="board-item-title">${n.title}</div>
                             <div class="board-item-content">${n.content || 'Без содержания'}</div>
-                            ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;">🔗 ${related.category}</div>` : ''}
+                            ${related ? `<div style="font-size:0.65rem;color:#a5b4fc;margin-bottom:4px;"> ${related.category}</div>` : ''}
                             <div class="board-item-meta">
                                 ${n.tags.map(t => {
                                     const tagInfo = TAGS.find(tt => tt.id === t);
@@ -1683,7 +1649,7 @@ window.openModal = function(type, editId = null) {
             <div class="form-group"><label>Тип</label><select class="select-field" id="c-type" onchange="updateMarkerColor()">${EVENT_TYPES.map(t => `<option value="${t}" ${item && item.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
             <div class="form-group"><label>Статус</label><select class="select-field" id="c-status"><option value="Запланировано" ${item && item.status==='Запланировано'?'selected':''}>Запланировано</option><option value="Сделано" ${item && item.status==='Сделано'?'selected':''}>Сделано</option></select></div>
             <div class="form-group"><label>Краткое описание</label><textarea class="textarea-field" id="c-description" placeholder="Необязательно">${item && item.description ? item.description : ''}</textarea></div>
-            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}>🔴 Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}> Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
+            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}>🔴 Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
     } else if (type === 'notes') {
