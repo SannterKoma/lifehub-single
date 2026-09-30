@@ -40,10 +40,6 @@ body {
     75% { background-position: 0% 100%; }
 }
 
-.emoji {
-    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', sans-serif;
-}
-
 .container {
     position: relative;
     z-index: 10;
@@ -84,23 +80,31 @@ body {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
+/* ===== НОВАЯ СТРУКТУРА ШАПКИ ===== */
 .card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.card-header-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
     gap: 12px;
 }
 
-.card-header h2 {
-    font-size: 1.2rem;
-    font-weight: 600;
+.card-header-top h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    flex: 1;
 }
 
-.card-header-actions {
+.card-header-bottom {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
     flex-wrap: wrap;
 }
@@ -111,13 +115,13 @@ body {
 }
 
 .view-btn {
-    padding: 6px 12px;
+    padding: 8px 14px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-secondary);
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 500;
     transition: all 0.2s;
 }
@@ -131,16 +135,17 @@ body {
 .period-toggle {
     display: flex;
     gap: 8px;
+    flex: 1;
 }
 
 .period-btn {
-    padding: 6px 12px;
+    padding: 8px 14px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-secondary);
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 500;
     transition: all 0.2s;
 }
@@ -155,16 +160,17 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 16px;
+    padding: 10px 20px;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     background: linear-gradient(135deg, var(--indigo), var(--purple));
     color: white;
     font-family: 'Inter', sans-serif;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     transition: opacity 0.1s;
+    white-space: nowrap;
 }
 .btn-add-top:active { opacity: 0.8; }
 
@@ -277,14 +283,14 @@ body {
     color: var(--text-primary);
 }
 
-.nav-tab.active .emoji {
+.nav-tab.active .nav-emoji {
     background: rgba(99, 102, 241, 0.2);
     padding: 6px;
     border-radius: 10px;
 }
 
-.nav-tab span.emoji { 
-    font-size: 1.2rem; 
+.nav-emoji { 
+    font-size: 1.3rem; 
     transition: background 0.1s;
     display: inline-block;
 }
@@ -860,9 +866,15 @@ body {
 .finance-view-board .finance-board-container { display: grid; }
 
 @media (max-width: 768px) {
-    .card-header-actions {
-        width: 100%;
-        justify-content: space-between;
+    .card-header-bottom {
+        flex-wrap: wrap;
+    }
+    .period-toggle {
+        flex: 1 1 100%;
+        order: 2;
+    }
+    .btn-add-top {
+        order: 1;
     }
 }
 </style>
@@ -873,21 +885,23 @@ body {
 
 <div class="container">
     <div class="page-header">
-        <h1><span class="emoji">🧠</span> Мой LifeHub</h1>
+        <h1>🧠 Мой LifeHub</h1>
         <p>Центр управления жизнью</p>
     </div>
 
     <div class="db-section active" id="section-finance">
         <div class="glass-card finance-view-table" id="finance-card">
             <div class="card-header">
-                <h2><span class="emoji">💰</span> Финансы</h2>
-                <div class="card-header-actions">
+                <div class="card-header-top">
+                    <h2>💰 Финансы</h2>
                     <div class="view-toggle">
                         <button class="view-btn active" onclick="setFinanceView('table')" id="btn-table">📋 Таблица</button>
                         <button class="view-btn" onclick="setFinanceView('board')" id="btn-board">📌 Доска</button>
                     </div>
+                </div>
+                <div class="card-header-bottom">
                     <div class="period-toggle">
-                        <button class="period-btn active" onclick="setFinancePeriod('month')" id="btn-month">📅 Месяц</button>
+                        <button class="period-btn active" onclick="setFinancePeriod('month')" id="btn-month"> Месяц</button>
                         <button class="period-btn" onclick="setFinancePeriod('all')" id="btn-all">📊 Всё</button>
                     </div>
                     <button class="btn-add-top" onclick="openModal('finance')">＋ Добавить</button>
@@ -919,9 +933,11 @@ body {
     <div class="db-section" id="section-calendar">
         <div class="glass-card">
             <div class="card-header">
-                <h2><span class="emoji">📅</span> Календарь</h2>
-                <div class="card-header-actions">
+                <div class="card-header-top">
+                    <h2>📅 Календарь</h2>
                     <span class="badge">Calendar</span>
+                </div>
+                <div class="card-header-bottom">
                     <button class="btn-add-top" onclick="openModal('calendar')">＋ Добавить</button>
                 </div>
             </div>
@@ -950,9 +966,11 @@ body {
     <div class="db-section" id="section-notes">
         <div class="glass-card">
             <div class="card-header">
-                <h2><span class="emoji"></span> Заметки</h2>
-                <div class="card-header-actions">
+                <div class="card-header-top">
+                    <h2>📝 Заметки</h2>
                     <span class="badge">Board</span>
+                </div>
+                <div class="card-header-bottom">
                     <button class="btn-add-top" onclick="openModal('notes')">＋ Добавить</button>
                 </div>
             </div>
@@ -963,15 +981,15 @@ body {
 
 <nav class="nav-bar">
     <button class="nav-tab active" onclick="switchTab('finance', this)">
-        <span class="emoji">💰</span>
+        <span class="nav-emoji">💰</span>
         <span>Финансы</span>
     </button>
     <button class="nav-tab" onclick="switchTab('calendar', this)">
-        <span class="emoji"></span>
+        <span class="nav-emoji"></span>
         <span>Календарь</span>
     </button>
     <button class="nav-tab" onclick="switchTab('notes', this)">
-        <span class="emoji">📝</span>
+        <span class="nav-emoji">📝</span>
         <span>Заметки</span>
     </button>
 </nav>
@@ -998,7 +1016,7 @@ let isCloudSync = false;
 let state = { finance: [], calendar: [], notes: [] };
 let calendarDate = new Date();
 let financeView = 'table';
-let financePeriod = 'month'; // 'month' или 'all'
+let financePeriod = 'month';
 
 let collapsedFolders = {
     finance: new Set(['Доходы', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения', 'Другое']),
@@ -1218,7 +1236,6 @@ window.calcFiat = function(item) {
     }
 };
 
-// Фильтрация по периоду
 window.getFilteredFinance = function() {
     if (financePeriod === 'month') {
         const now = new Date();
@@ -1574,7 +1591,7 @@ window.showDayEvents = function(year, month, day) {
     const content = document.getElementById('modal-content');
     const dateStr = `${day} ${MONTHS[month].toLowerCase()} ${year}`;
     
-    let html = `<h3> ${dateStr}</h3>`;
+    let html = `<h3>📅 ${dateStr}</h3>`;
     html += `<div style="margin-bottom:16px;color:var(--text-secondary);font-size:0.85rem;">Событий: ${events.length}</div>`;
     
     events.forEach(ev => {
@@ -1711,7 +1728,7 @@ window.openModal = function(type, editId = null) {
             <div class="form-group"><label>Тип</label><select class="select-field" id="c-type" onchange="updateMarkerColor()">${EVENT_TYPES.map(t => `<option value="${t}" ${item && item.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
             <div class="form-group"><label>Статус</label><select class="select-field" id="c-status"><option value="Запланировано" ${item && item.status==='Запланировано'?'selected':''}>Запланировано</option><option value="Сделано" ${item && item.status==='Сделано'?'selected':''}>Сделано</option></select></div>
             <div class="form-group"><label>Краткое описание</label><textarea class="textarea-field" id="c-description" placeholder="Необязательно">${item && item.description ? item.description : ''}</textarea></div>
-            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}>🔴 Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
+            <div class="form-group"><label>Цветной маркер</label><select class="select-field" id="c-markerColor"><option value="blue" ${item && item.markerColor==='blue'?'selected':''}>🔵 Синий</option><option value="red" ${item && item.markerColor==='red'?'selected':''}> Красный</option><option value="green" ${item && item.markerColor==='green'?'selected':''}>🟢 Зелёный</option><option value="purple" ${item && item.markerColor==='purple'?'selected':''}>🟣 Фиолетовый</option><option value="yellow" ${item && item.markerColor==='yellow'?'selected':''}>🟡 Жёлтый</option><option value="orange" ${item && item.markerColor==='orange'?'selected':''}>🟠 Оранжевый</option></select></div>
             <div class="form-group"><label>Связано с финансами</label><select class="select-field" id="c-relation"><option value="">— Нет —</option>${state.finance.map(f => `<option value="${f.id}" ${item && item.relationId===f.id?'selected':''}>${f.category} (${f.amount} ${f.currency})</option>`).join('')}</select></div>
         `;
     } else if (type === 'notes') {
@@ -1862,7 +1879,7 @@ window.saveData = function(type, editId) {
         showNotification(editId ? '✅ Обновлено' : '✅ Добавлено', 'success');
     } catch (error) {
         console.error('Ошибка сохранения:', error);
-        showNotification(' Ошибка: ' + error.message, 'error');
+        showNotification('❌ Ошибка: ' + error.message, 'error');
     }
 };
 
@@ -1902,7 +1919,7 @@ window.viewNote = function(id) {
         <div style="background:rgba(0,0,0,0.2); padding:16px; border-radius:10px; line-height:1.5; white-space:pre-wrap; margin-bottom:20px;">${note.content || 'Без содержания'}</div>
         <div class="modal-actions">
             <button class="btn btn-secondary" onclick="closeModal()">Закрыть</button>
-            <button class="btn btn-primary" onclick="closeModal(); editItem('notes', '${note.id}')">✏️ Редактировать</button>
+            <button class="btn btn-primary" onclick="closeModal(); editItem('notes', '${note.id}')">️ Редактировать</button>
         </div>
     `;
     document.getElementById('modal-overlay').classList.add('active');
