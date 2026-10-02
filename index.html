@@ -69,6 +69,99 @@ body {
     font-size: 0.9rem;
 }
 
+/* Кнопка диагностики */
+.debug-btn {
+    position: fixed;
+    bottom: 80px;
+    right: 10px;
+    z-index: 150;
+    padding: 10px 14px;
+    background: rgba(251, 191, 36, 0.2);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    color: #fbbf24;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+}
+
+.debug-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.debug-overlay.active { display: flex; }
+
+.debug-box {
+    background: #1a1a3e;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.debug-box h3 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: #fbbf24;
+}
+
+.debug-box pre {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: #4ade80;
+    margin-bottom: 12px;
+}
+
+.debug-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.debug-actions button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.btn-restore {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+}
+
+.btn-clear {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+.btn-close-debug {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
 .glass-card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
@@ -108,10 +201,7 @@ body {
     flex-wrap: wrap;
 }
 
-.view-toggle {
-    display: flex;
-    gap: 8px;
-}
+.view-toggle { display: flex; gap: 8px; }
 
 .view-btn {
     padding: 8px 14px;
@@ -131,11 +221,7 @@ body {
     color: var(--text-primary);
 }
 
-.period-toggle {
-    display: flex;
-    gap: 8px;
-    flex: 1;
-}
+.period-toggle { display: flex; gap: 8px; flex: 1; }
 
 .period-btn {
     padding: 8px 14px;
@@ -183,10 +269,7 @@ body {
     color: #a5b4fc;
 }
 
-.db-table {
-    width: 100%;
-    border-collapse: collapse;
-}
+.db-table { width: 100%; border-collapse: collapse; }
 
 .db-table thead th {
     text-align: left;
@@ -198,14 +281,8 @@ body {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.db-table tbody tr {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.db-table tbody td {
-    padding: 10px;
-    font-size: 0.85rem;
-}
+.db-table tbody tr { border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+.db-table tbody td { padding: 10px; font-size: 0.85rem; }
 
 .text-secondary { color: var(--text-secondary); font-weight: 400; }
 
@@ -278,9 +355,7 @@ body {
     transition: color 0.1s;
 }
 
-.nav-tab.active {
-    color: var(--text-primary);
-}
+.nav-tab.active { color: var(--text-primary); }
 
 .nav-tab.active .nav-emoji {
     background: rgba(99, 102, 241, 0.2);
@@ -355,13 +430,8 @@ body {
     user-select: none;
 }
 
-.folder-header:hover {
-    background: rgba(255, 255, 255, 0.07);
-}
-
-.folder-header:active {
-    transform: scale(0.99);
-}
+.folder-header:hover { background: rgba(255, 255, 255, 0.07); }
+.folder-header:active { transform: scale(0.99); }
 
 .folder-header-left {
     display: flex;
@@ -377,26 +447,11 @@ body {
     display: inline-block;
 }
 
-.folder-arrow.open {
-    transform: rotate(90deg);
-}
+.folder-arrow.open { transform: rotate(90deg); }
 
-.folder-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
-.folder-count {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    margin-left: 6px;
-    font-weight: 400;
-}
-
-.folder-total {
-    font-size: 0.85rem;
-    font-weight: 700;
-}
+.folder-name { font-size: 0.9rem; font-weight: 600; }
+.folder-count { font-size: 0.7rem; color: var(--text-secondary); margin-left: 6px; font-weight: 400; }
+.folder-total { font-size: 0.85rem; font-weight: 700; }
 
 .finance-board-container {
     display: grid;
@@ -424,9 +479,7 @@ body {
     user-select: none;
 }
 
-.finance-column-header:hover {
-    opacity: 0.8;
-}
+.finance-column-header:hover { opacity: 0.8; }
 
 .finance-column-title {
     font-size: 0.8rem;
@@ -437,10 +490,7 @@ body {
     gap: 6px;
 }
 
-.finance-column-total {
-    font-size: 0.75rem;
-    font-weight: 600;
-}
+.finance-column-total { font-size: 0.75rem; font-weight: 600; }
 
 .finance-column-items {
     transition: max-height 0.3s ease;
@@ -448,9 +498,7 @@ body {
     max-height: 5000px;
 }
 
-.finance-column-items.collapsed {
-    max-height: 0;
-}
+.finance-column-items.collapsed { max-height: 0; }
 
 .finance-item {
     background: rgba(255, 255, 255, 0.04);
@@ -467,9 +515,7 @@ body {
     transform: translateY(-1px);
 }
 
-.finance-item:active {
-    background: rgba(255, 255, 255, 0.1);
-}
+.finance-item:active { background: rgba(255, 255, 255, 0.1); }
 
 .finance-item-header {
     display: flex;
@@ -478,21 +524,9 @@ body {
     margin-bottom: 6px;
 }
 
-.finance-item-amount {
-    font-size: 0.95rem;
-    font-weight: 700;
-}
-
-.finance-item-date {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-}
-
-.finance-item-sub {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
-}
+.finance-item-amount { font-size: 0.95rem; font-weight: 700; }
+.finance-item-date { font-size: 0.7rem; color: var(--text-secondary); }
+.finance-item-sub { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px; }
 
 .finance-item-comment {
     font-size: 0.7rem;
@@ -865,22 +899,31 @@ body {
 .finance-view-board .finance-board-container { display: grid; }
 
 @media (max-width: 768px) {
-    .card-header-bottom {
-        flex-wrap: wrap;
-    }
-    .period-toggle {
-        flex: 1 1 100%;
-        order: 2;
-    }
-    .btn-add-top {
-        order: 1;
-    }
+    .card-header-bottom { flex-wrap: wrap; }
+    .period-toggle { flex: 1 1 100%; order: 2; }
+    .btn-add-top { order: 1; }
 }
 </style>
 </head>
 <body>
 
 <div class="sync-status" id="sync-status">Локальный режим</div>
+
+<!-- Кнопка диагностики -->
+<button class="debug-btn" onclick="showDebug()">🔍 Данные</button>
+
+<!-- Окно диагностики -->
+<div class="debug-overlay" id="debug-overlay">
+    <div class="debug-box">
+        <h3>🔍 Диагностика данных</h3>
+        <div id="debug-content"></div>
+        <div class="debug-actions">
+            <button class="btn-restore" onclick="restoreFromLocal()">Восстановить</button>
+            <button class="btn-clear" onclick="clearLocal()">Очистить</button>
+            <button class="btn-close-debug" onclick="closeDebug()">Закрыть</button>
+        </div>
+    </div>
+</div>
 
 <div class="container">
     <div class="page-header">
@@ -998,7 +1041,7 @@ body {
 </div>
 
 <script>
-// Вставляем эмодзи через JavaScript
+// Эмодзи
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('main-title').innerHTML = '\u{1F9E0} Мой LifeHub';
     document.getElementById('finance-title').innerHTML = '\u{1F4B0} Финансы';
@@ -1009,7 +1052,76 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('nav-notes-icon').textContent = '\u{1F4DD}';
 });
 
-//  FIREBASE КОНФИГ (твои реальные ключи)
+// Функции диагностики
+window.showDebug = function() {
+    const localData = localStorage.getItem('lifehub_local');
+    const content = document.getElementById('debug-content');
+    
+    let html = '<h4 style="margin-bottom:8px;color:#a5b4fc;">LocalStorage:</h4>';
+    
+    if (localData) {
+        try {
+            const parsed = JSON.parse(localData);
+            const finCount = parsed.finance ? parsed.finance.length : 0;
+            const calCount = parsed.calendar ? parsed.calendar.length : 0;
+            const noteCount = parsed.notes ? parsed.notes.length : 0;
+            
+            html += `<pre style="color:#4ade80;">✅ Найдено данных:
+• Финансы: ${finCount} записей
+• Календарь: ${calCount} событий
+• Заметки: ${noteCount} заметок</pre>`;
+            
+            if (finCount > 0) {
+                html += '<h4 style="margin:12px 0 8px;color:#a5b4fc;">Последние 3 записи финансов:</h4><pre>';
+                html += JSON.stringify(parsed.finance.slice(-3), null, 2);
+                html += '</pre>';
+            }
+        } catch(e) {
+            html += `<pre style="color:#f87171;">❌ Ошибка парсинга: ${e.message}</pre>`;
+        }
+    } else {
+        html += '<pre style="color:#f87171;">❌ LocalStorage пуст — данных нет</pre>';
+    }
+    
+    content.innerHTML = html;
+    document.getElementById('debug-overlay').classList.add('active');
+};
+
+window.closeDebug = function() {
+    document.getElementById('debug-overlay').classList.remove('active');
+};
+
+window.restoreFromLocal = function() {
+    const localData = localStorage.getItem('lifehub_local');
+    if (!localData) {
+        alert('Данных в localStorage нет!');
+        return;
+    }
+    
+    try {
+        const parsed = JSON.parse(localData);
+        state.finance = parsed.finance || [];
+        state.calendar = parsed.calendar || [];
+        state.notes = parsed.notes || [];
+        
+        // Сохраняем в Firebase
+        saveState();
+        renderAll();
+        closeDebug();
+        showNotification('✅ Данные восстановлены!', 'success');
+    } catch(e) {
+        alert('Ошибка: ' + e.message);
+    }
+};
+
+window.clearLocal = function() {
+    if (confirm('Очистить localStorage? Это удалит локальные данные.')) {
+        localStorage.removeItem('lifehub_local');
+        showDebug();
+    }
+};
+
+// Firebase конфиг
 const firebaseConfig = {
     apiKey: "AIzaSyDOr6kzxayM7fOwuEs4xvb0CPvqicdh890",
     authDomain: "lifehub28.firebaseapp.com",
@@ -1027,7 +1139,7 @@ let isCloudSync = false;
 let state = { finance: [], calendar: [], notes: [] };
 let calendarDate = new Date();
 let financeView = 'table';
-let financePeriod = 'all'; // ПО УМОЛЧАНИЮ "ВСЁ"
+let financePeriod = 'all';
 
 let collapsedFolders = {
     finance: new Set(['Доходы', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения', 'Другое']),
@@ -1159,13 +1271,12 @@ window.saveState = function() {
                 showNotification("Ошибка синхронизации", "error");
             });
         });
-    } else {
-        try {
-            localStorage.setItem('lifehub_local', JSON.stringify(state));
-        } catch (e) {
-            console.error("Ошибка localStorage:", e);
-            showNotification("Ошибка сохранения: " + e.message, "error");
-        }
+    }
+    
+    try {
+        localStorage.setItem('lifehub_local', JSON.stringify(state));
+    } catch (e) {
+        console.error("Ошибка localStorage:", e);
     }
 };
 
@@ -1192,7 +1303,6 @@ window.loadLocalState = function() {
     renderAll();
 };
 
-// 🔥 УМНАЯ ЗАГРУЗКА: если облако пустое — берём из localStorage
 window.loadCloudState = function() {
     ensureState();
     import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
@@ -1204,13 +1314,11 @@ window.loadCloudState = function() {
                  (Array.isArray(data.calendar) && data.calendar.length > 0));
             
             if (hasRealData) {
-                // В облаке есть данные — используем их
                 state.finance = Array.isArray(data.finance) ? data.finance : [];
                 state.calendar = Array.isArray(data.calendar) ? data.calendar : [];
                 state.notes = Array.isArray(data.notes) ? data.notes : [];
                 console.log('✅ Загружено из Firebase:', state.finance.length, 'записей');
             } else {
-                // Облако пустое — пробуем взять из localStorage
                 const localSaved = localStorage.getItem('lifehub_local');
                 if (localSaved) {
                     try {
@@ -1221,7 +1329,6 @@ window.loadCloudState = function() {
                             state.finance = Array.isArray(localData.finance) ? localData.finance : [];
                             state.calendar = Array.isArray(localData.calendar) ? localData.calendar : [];
                             state.notes = Array.isArray(localData.notes) ? localData.notes : [];
-                            // Сохраняем локальные данные в облако
                             fb.set(dataRef, state).then(() => {
                                 console.log('✅ Данные восстановлены из localStorage в Firebase');
                             }).catch(err => {
