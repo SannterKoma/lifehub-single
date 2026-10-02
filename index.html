@@ -998,7 +998,7 @@ body {
 </div>
 
 <script>
-// Вставляем эмодзи через JavaScript после загрузки
+// Вставляем эмодзи через JavaScript
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('main-title').innerHTML = '\u{1F9E0} Мой LifeHub';
     document.getElementById('finance-title').innerHTML = '\u{1F4B0} Финансы';
@@ -1009,14 +1009,15 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('nav-notes-icon').textContent = '\u{1F4DD}';
 });
 
+//  FIREBASE КОНФИГ (твои реальные ключи)
 const firebaseConfig = {
-  apiKey: "AIzaSyDOr6kzxayM7fOwuEs4xvbOCPvqicdh890",
-  authDomain: "lifehub28.firebaseapp.com",
-  databaseURL: "https://lifehub28-default-rtdb.firebaseio.com",
-  projectId: "lifehub28",
-  storageBucket: "lifehub28.firebasestorage.app",
-  messagingSenderId: "283957281646",
-  appId: "1:283957281646:web:fa59629284fb259ad3377f"
+    apiKey: "AIzaSyDOr6kzxayM7fOwuEs4xvb0CPvqicdh890",
+    authDomain: "lifehub28.firebaseapp.com",
+    databaseURL: "https://lifehub28-default-rtdb.firebaseio.com",
+    projectId: "lifehub28",
+    storageBucket: "lifehub28.firebasestorage.app",
+    messagingSenderId: "283957281646",
+    appId: "1:283957281646:web:fa59629284fb259ad3377f"
 };
 
 let db = null;
@@ -1191,17 +1192,51 @@ window.loadLocalState = function() {
     renderAll();
 };
 
+// 🔥 УМНАЯ ЗАГРУЗКА: если облако пустое — берём из localStorage
 window.loadCloudState = function() {
     ensureState();
     import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
         fb.onValue(dataRef, (snapshot) => {
             const data = snapshot.val();
-            if (data && typeof data === 'object') {
+            const hasRealData = data && typeof data === 'object' && 
+                ((Array.isArray(data.finance) && data.finance.length > 0) || 
+                 (Array.isArray(data.notes) && data.notes.length > 0) || 
+                 (Array.isArray(data.calendar) && data.calendar.length > 0));
+            
+            if (hasRealData) {
+                // В облаке есть данные — используем их
                 state.finance = Array.isArray(data.finance) ? data.finance : [];
                 state.calendar = Array.isArray(data.calendar) ? data.calendar : [];
                 state.notes = Array.isArray(data.notes) ? data.notes : [];
+                console.log('✅ Загружено из Firebase:', state.finance.length, 'записей');
             } else {
-                seedData();
+                // Облако пустое — пробуем взять из localStorage
+                const localSaved = localStorage.getItem('lifehub_local');
+                if (localSaved) {
+                    try {
+                        const localData = JSON.parse(localSaved);
+                        if (localData && typeof localData === 'object' && 
+                            ((Array.isArray(localData.finance) && localData.finance.length > 0) || 
+                             (Array.isArray(localData.notes) && localData.notes.length > 0))) {
+                            state.finance = Array.isArray(localData.finance) ? localData.finance : [];
+                            state.calendar = Array.isArray(localData.calendar) ? localData.calendar : [];
+                            state.notes = Array.isArray(localData.notes) ? localData.notes : [];
+                            // Сохраняем локальные данные в облако
+                            fb.set(dataRef, state).then(() => {
+                                console.log('✅ Данные восстановлены из localStorage в Firebase');
+                            }).catch(err => {
+                                console.error('Ошибка сохранения в Firebase:', err);
+                            });
+                        } else {
+                            seedData();
+                        }
+                    } catch(e) {
+                        console.error("Ошибка парсинга localStorage:", e);
+                        seedData();
+                    }
+                } else {
+                    seedData();
+                }
             }
             renderAll();
         }, (error) => {
