@@ -880,7 +880,7 @@ body {
 </head>
 <body>
 
-<div class="sync-status" id="sync-status">💾 Локальный режим</div>
+<div class="sync-status" id="sync-status">Локальный режим</div>
 
 <div class="container">
     <div class="page-header">
@@ -894,14 +894,14 @@ body {
                 <div class="card-header-top">
                     <h2 id="finance-title">Финансы</h2>
                     <div class="view-toggle">
-                        <button class="view-btn active" onclick="setFinanceView('table')" id="btn-table">📋 Таблица</button>
-                        <button class="view-btn" onclick="setFinanceView('board')" id="btn-board">📌 Доска</button>
+                        <button class="view-btn active" onclick="setFinanceView('table')" id="btn-table">Таблица</button>
+                        <button class="view-btn" onclick="setFinanceView('board')" id="btn-board">Доска</button>
                     </div>
                 </div>
                 <div class="card-header-bottom">
                     <div class="period-toggle">
-                        <button class="period-btn active" onclick="setFinancePeriod('month')" id="btn-month">📅 Месяц</button>
-                        <button class="period-btn" onclick="setFinancePeriod('all')" id="btn-all">📊 Всё</button>
+                        <button class="period-btn" onclick="setFinancePeriod('month')" id="btn-month">Месяц</button>
+                        <button class="period-btn active" onclick="setFinancePeriod('all')" id="btn-all">Всё</button>
                     </div>
                     <button class="btn-add-top" onclick="openModal('finance')">＋ Добавить</button>
                 </div>
@@ -980,15 +980,15 @@ body {
 
 <nav class="nav-bar">
     <button class="nav-tab active" onclick="switchTab('finance', this)">
-        <span class="nav-emoji" id="nav-finance-icon">💰</span>
+        <span class="nav-emoji" id="nav-finance-icon"></span>
         <span>Финансы</span>
     </button>
     <button class="nav-tab" onclick="switchTab('calendar', this)">
-        <span class="nav-emoji" id="nav-calendar-icon">📅</span>
+        <span class="nav-emoji" id="nav-calendar-icon"></span>
         <span>Календарь</span>
     </button>
     <button class="nav-tab" onclick="switchTab('notes', this)">
-        <span class="nav-emoji" id="nav-notes-icon">📝</span>
+        <span class="nav-emoji" id="nav-notes-icon"></span>
         <span>Заметки</span>
     </button>
 </nav>
@@ -1010,13 +1010,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDOr6kzxayM7fOwuEs4xvbOCPvqicdh890",
-  authDomain: "lifehub28.firebaseapp.com",
-  databaseURL: "https://lifehub28-default-rtdb.firebaseio.com",
-  projectId: "lifehub28",
-  storageBucket: "lifehub28.firebasestorage.app",
-  messagingSenderId: "283957281646",
-  appId: "1:283957281646:web:fa59629284fb259ad3377f"
+    apiKey: "ВСТАВЬ_СЮДА",
+    authDomain: "ВСТАВЬ_СЮДА",
+    databaseURL: "ВСТАВЬ_СЮДА",
+    projectId: "ВСТАВЬ_СЮДА",
+    storageBucket: "ВСТАВЬ_СЮДА",
+    messagingSenderId: "ВСТАВЬ_СЮДА",
+    appId: "ВСТАВЬ_СЮДА"
 };
 
 let db = null;
@@ -1026,7 +1026,7 @@ let isCloudSync = false;
 let state = { finance: [], calendar: [], notes: [] };
 let calendarDate = new Date();
 let financeView = 'table';
-let financePeriod = 'month';
+let financePeriod = 'all'; // ПО УМОЛЧАНИЮ "ВСЁ"
 
 let collapsedFolders = {
     finance: new Set(['Доходы', 'Еда', 'Продукты', 'Нужды', 'Долги', 'Транспорт', 'Комиссии', 'Быт', 'Развлечения', 'Другое']),
