@@ -2089,7 +2089,28 @@ window.showNotification = function(message, type) {
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 3000);
 };
-
+// Проверка Firebase при загрузке
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        if (isCloudSync && dataRef) {
+            import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(fb => {
+                fb.get(dataRef).then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        const finCount = data.finance ? data.finance.length : 0;
+                        const calCount = data.calendar ? data.calendar.length : 0;
+                        const noteCount = data.notes ? data.notes.length : 0;
+                        console.log('📊 Firebase данные:', finCount, calCount, noteCount);
+                        alert('В Firebase найдено:\n• Финансы: ' + finCount + '\n• Календарь: ' + calCount + '\n• Заметки: ' + noteCount);
+                    } else {
+                        console.log('Firebase пуст');
+                        alert('Firebase пуст — данных в облаке нет');
+                    }
+                });
+            });
+        }
+    }, 3000);
+});
 initFirebase();
 </script>
 </body>
